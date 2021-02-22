@@ -19,12 +19,25 @@ export const verifyCredentials = async (
     if (!data.exists) {
       res.status(404).send("User with the given ID not found");
     } else {
+      /* temporary code */
+      let { passwordHashed, userType } = data.data()!;
+      userType = userType == "student" ? "students" : userType;
+      /* ============== */
+
       const inputPasswordHashed = new MD5().hex(credentials.password);
-      const actualPasswordHashed = data.data()!.passwordHashed;
+      const actualPasswordHashed = passwordHashed;
       const isPasswordMatch = inputPasswordHashed === actualPasswordHashed;
 
       if (isPasswordMatch) {
-        res.status(200).send("Authenticated");
+        const userDetails = await firestore
+          .collection(userType)
+          .doc(credentials.userId);
+        const data = await userDetails.get();
+        const formattedData = data.data()!;
+        formattedData.userId = credentials.userId;
+        formattedData.userType = userType;
+
+        res.status(200).send(formattedData);
       } else res.status(403).send("Forbidden");
     }
   } catch (error) {
