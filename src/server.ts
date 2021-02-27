@@ -1,6 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from "express";
 import configs from "./config";
 import cors from "cors";
+import multer from "multer";
 import bodyParser from "body-parser";
 
 import studentRoutes from "./routes/studentRoutes";
@@ -15,6 +16,7 @@ const app: Application = express();
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
+app.use(multer({ dest: "uploads/" }).array("docs"));
 
 app.use("/api", studentRoutes.routes);
 app.use("/api", credentialRoutes.routes);
@@ -23,8 +25,12 @@ app.use("/api", assignmentRoutes.routes);
 app.use("/api", groupRoutes.routes);
 app.use("/api", subjectRoutes.routes);
 
-app.get("/", (req: Request, res: Response, next: NextFunction) => {
+app.get("/", async (req: Request, res: Response, next: NextFunction) => {
   res.send("hello");
+});
+
+app.post("/upload", async (req: Request, res: Response, next: NextFunction) => {
+  console.dir(req.files);
 });
 
 app.listen(configs.port, (): void => console.log("Server ready"));
