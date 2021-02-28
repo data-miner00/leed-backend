@@ -10,11 +10,11 @@ export const getLecturer = async (
 ) => {
   try {
     const staffId = req.params.id;
-    const lecturer = await firestore.collection("lecturer").doc(staffId);
-    const data = await lecturer.get();
+    const lecturerRef = firestore.collection("lecturer").doc(staffId);
+    const lecturerData = await lecturerRef.get();
 
-    if (data.exists) {
-      res.status(200).send(data.data());
+    if (lecturerData.exists) {
+      res.status(200).send(lecturerData.data());
     } else {
       res.status(404).send("Data not found");
     }

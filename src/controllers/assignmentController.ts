@@ -10,13 +10,11 @@ export const getAssignment = async (
 ) => {
   try {
     const assignmentId = req.params.id;
-    const assignment = await firestore
-      .collection("assignments")
-      .doc(assignmentId);
-    const data = await assignment.get();
+    const assignmentRef = firestore.collection("assignments").doc(assignmentId);
+    const assignmentData = await assignmentRef.get();
 
-    if (data.exists) {
-      res.status(200).send(data.data());
+    if (assignmentData.exists) {
+      res.status(200).send(assignmentData.data());
     } else {
       res.status(404).send("Assignment with the given ID not found");
     }

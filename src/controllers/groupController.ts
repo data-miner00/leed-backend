@@ -11,7 +11,7 @@ export const addGroup = async (
   try {
     const data = req.body;
     await firestore.collection("groups").doc().set(data);
-    res.status(200).send("Record saved");
+    res.status(200).send("Group created");
   } catch (error) {
     res.status(400).send(error.message);
   }

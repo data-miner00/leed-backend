@@ -24,13 +24,13 @@ export const getAllStudents = async (
   next: NextFunction
 ) => {
   try {
-    const students = await firestore.collection("students");
-    const data = await students.get();
+    const studentsRef = firestore.collection("students");
+    const studentsData = await studentsRef.get();
     const studentsArray: Student[] = [];
-    if (data.empty) {
+    if (studentsData.empty) {
       res.status(404).send("No student record found");
     } else {
-      data.forEach((doc) => {
+      studentsData.forEach((doc) => {
         const student = new Student(
           doc.data().name,
           doc.data().id,
@@ -54,12 +54,12 @@ export const getStudent = async (
 ) => {
   try {
     const id = req.params.id;
-    const student = await firestore.collection("students").doc(id);
-    const data = await student.get();
-    if (!data.exists) {
+    const studentRef = firestore.collection("students").doc(id);
+    const studentData = await studentRef.get();
+    if (!studentData.exists) {
       res.status(404).send("Student with the given ID not found");
     } else {
-      res.status(200).send(data.data());
+      res.status(200).send(studentData.data());
     }
   } catch (error) {
     res.status(400).send(error.message);
@@ -74,8 +74,8 @@ export const updateStudent = async (
   try {
     const id = req.params.id;
     const data = req.body;
-    const student = await firestore.collection("students").doc(id);
-    await student.update(data);
+    const studentRef = firestore.collection("students").doc(id);
+    await studentRef.update(data);
     res.send("Student record updated successfully");
   } catch (error) {
     res.status(400).send(error.message);
