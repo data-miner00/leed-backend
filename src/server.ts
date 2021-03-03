@@ -16,7 +16,17 @@ const app: Application = express();
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
-app.use(multer({ dest: "uploads/" }).array("docs"));
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads");
+  },
+  filename: (req, file, cb) => {
+    const { originalname } = file;
+    cb(null, originalname);
+  },
+});
+app.use(multer({ storage }).array("docs"));
 
 app.use("/api", studentRoutes.routes);
 app.use("/api", credentialRoutes.routes);
