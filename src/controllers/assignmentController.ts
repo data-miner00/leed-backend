@@ -1,6 +1,5 @@
 import { db as firebase, FieldPath } from "../database";
 import { Request, Response, NextFunction } from "express";
-import { group } from "console";
 
 const firestore = firebase.firestore();
 
@@ -120,25 +119,22 @@ export const getSomeDetails = async (
           subjects
             .find((s) => s.id == subjectCode)
             ?.assignmentsId.includes(g.assignmentId)
-        )?.id || null;
+        )?.id || "";
 
       assignments.push({
         subjectCode,
-        subjectTitle: subjects.find((s) => s.id == subjectCode)?.name,
+        subjectTitle: subjects.find((s) => s.id == subjectCode)!.name,
         assignNo,
         groupId,
       });
-      if (groupId != null) {
+      if (groupId != "") {
         const indexInGroups = groups.map((g) => g.id).indexOf(groupId);
         groups.splice(indexInGroups, 1);
       }
     });
-
-    console.log(subjects);
-    console.log(groups);
     console.log(assignments);
     res.status(200).send(assignments);
   } catch (error) {
-    res.status(400).send("ERRORRR");
+    res.status(400).send(error.message);
   }
 };
