@@ -1,19 +1,22 @@
 export default class Assignment {
-  #name: string;
+  #title: string;
   #id: string;
+  #subjectCode: string;
   #assignNo: number;
   #language: string;
   #description: string;
 
   constructor(
-    name: string,
+    title: string,
     id: string,
+    subjectCode: string,
     assignNo: number,
     language: string,
     description: string
   ) {
-    this.#name = name;
+    this.#title = title;
     this.#id = id;
+    this.#subjectCode = subjectCode;
     this.#assignNo = assignNo;
     this.#language = language;
     this.#description = description;
