@@ -4,19 +4,22 @@ export default class Group {
   #leaderId: string;
   #membersId: string[];
   #maxSize: number;
+  #ganttId: string;
 
   constructor(
     id: string,
     subjectId: string,
     leaderId: string,
     maxSize: number,
-    membersId: string[]
+    membersId: string[],
+    ganttId: string
   ) {
     this.#id = id;
     this.#subjectId = subjectId;
     this.#leaderId = leaderId;
     this.#maxSize = maxSize;
     this.#membersId = membersId;
+    this.#ganttId = ganttId;
   }
 
   // getGroupId(): string {
