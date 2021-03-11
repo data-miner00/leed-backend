@@ -1,4 +1,4 @@
-import { db as firebase } from "../database";
+import { db as firebase, FieldPath, FieldValue } from "../database";
 import Student from "../models/Student";
 import { Request, Response, NextFunction } from "express";
 
@@ -91,6 +91,29 @@ export const deleteStudent = async (
     const id = req.params.id;
     await firestore.collection("students").doc(id).delete();
     res.send("Record deleted successfully");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+export const getStudentsAvatar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const studentsId: string[] = req.body;
+    const studentsQuery = firestore
+      .collection("students")
+      .where(FieldPath.documentId(), "in", studentsId);
+    const studentsSnapshot = await studentsQuery.get();
+    const studentAvatarMap: any = {};
+    studentsSnapshot.forEach((doc) => {
+      const { name, avatarUri } = doc.data();
+      studentAvatarMap[doc.id] = { name, avatarUri };
+    });
+    console.log(studentAvatarMap);
+    res.status(200).send(studentAvatarMap);
   } catch (error) {
     res.status(400).send(error.message);
   }
