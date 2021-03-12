@@ -126,6 +126,7 @@ export const getSomeDetails = async (
         subjectTitle: subjects.find((s) => s.id == subjectCode)!.name,
         assignNo,
         groupId,
+        assignmentId: doc.id,
       });
       if (groupId != "") {
         const indexInGroups = groups.map((g) => g.id).indexOf(groupId);
