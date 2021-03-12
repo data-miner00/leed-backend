@@ -13,6 +13,8 @@ const {
   STORAGE_BUCKET,
   MESSAGING_SENDER_ID,
   APP_ID,
+  EMAIL,
+  EMAIL_PASSWORD,
 } = process.env;
 
 assert(PORT, "PORT is required");
@@ -29,5 +31,9 @@ export default {
     storageBucket: STORAGE_BUCKET,
     messagingSenderId: MESSAGING_SENDER_ID,
     appId: APP_ID,
+  },
+  emailConfig: {
+    email: EMAIL,
+    password: EMAIL_PASSWORD,
   },
 };
