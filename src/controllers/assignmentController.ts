@@ -112,7 +112,7 @@ export const getSomeDetails = async (
     });
 
     assignmentsSnapshot.forEach((doc) => {
-      const { subjectCode, assignNo } = doc.data();
+      const { subjectCode, assignNo, language } = doc.data();
 
       const groupId =
         groups.find((g) =>
@@ -126,6 +126,7 @@ export const getSomeDetails = async (
         subjectTitle: subjects.find((s) => s.id == subjectCode)!.name,
         assignNo,
         groupId,
+        language,
         assignmentId: doc.id,
       });
       if (groupId != "") {
@@ -139,3 +140,16 @@ export const getSomeDetails = async (
     res.status(400).send(error.message);
   }
 };
+
+// export const assignmentSubmit = (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const affectedPeoplesId = req.body;
+//     await firestore.collection("notifications").doc().set({});
+//   } catch (error) {
+//     res.status(400).send(error.message);
+//   }
+// }
