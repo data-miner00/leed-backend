@@ -19,10 +19,7 @@ export const verifyCredentials = async (
     if (!userCredentialData.exists) {
       res.status(404).send("User with the given ID not found");
     } else {
-      /* temporary code */
       let { passwordHashed, userType } = userCredentialData.data()!;
-      userType = userType == "student" ? "students" : userType;
-      /* ============== */
 
       const inputPasswordHashed = new MD5().hex(credentials.password);
       const actualPasswordHashed = passwordHashed;
@@ -30,7 +27,7 @@ export const verifyCredentials = async (
 
       if (isPasswordMatch) {
         const userDetailsRef = firestore
-          .collection(userType)
+          .collection(userType == "student" ? "students" : userType)
           .doc(credentials.userId);
         const userDetailsData = await userDetailsRef.get();
         const formattedData = userDetailsData.data()!;
