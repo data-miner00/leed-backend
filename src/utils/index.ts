@@ -31,6 +31,20 @@ export const timestampToDate = ({
   return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 };
 
+export const timestampGetTime = ({
+  seconds,
+  nanoseconds,
+}: {
+  seconds: number;
+  nanoseconds: number;
+}) => {
+  const date = new Date(seconds * 1e3 + nanoseconds / 1e6);
+  return `${date
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+};
+
 export const isEmpty = (obj: Object): boolean => {
   return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 };
