@@ -10,6 +10,7 @@ import lecturerRoutes from "./routes/lecturerRoutes";
 import assignmentRoutes from "./routes/assignmentRoutes";
 import groupRoutes from "./routes/groupRoutes";
 import subjectRoutes from "./routes/subjectRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
 
 const app: Application = express();
 
@@ -34,6 +35,7 @@ app.use("/api", lecturerRoutes.routes);
 app.use("/api", assignmentRoutes.routes);
 app.use("/api", groupRoutes.routes);
 app.use("/api", subjectRoutes.routes);
+app.use("/api", notificationRoutes.routes);
 
 app.get("/", async (req: Request, res: Response, next: NextFunction) => {
   res.send("hello");
