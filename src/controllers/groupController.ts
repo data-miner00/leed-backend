@@ -1,37 +1,42 @@
 import { db as firebase, FieldPath, FieldValue } from "../database";
 import { Request, Response, NextFunction } from "express";
 import { generate } from "short-uuid";
-import { bookingAlgorithm } from "../utils";
+import { bookingAlgorithm, randomPop } from "../utils";
 
 const firestore = firebase.firestore();
 
-export const addGroup = async (
+export const createGroup = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const data = req.body;
-    const creatorId = req.body.id;
+    const {
+      assignmentId,
+      studentId,
+    }: { assignmentId: string; studentId: string } = req.body;
     const newGroupId = generate();
-    await firestore.collection("groups").doc(newGroupId).set(data);
 
-    const creatorRef = firestore.collection("students").doc(creatorId);
-    const creatorData = (await creatorRef.get()).data();
-    if (creatorData!.hasOwnProperty("groupsId"))
-      await firestore
-        .collection("students")
-        .doc(creatorId)
-        .update({
-          groupsId: [newGroupId, ...creatorData!.groupsId],
-        });
-    else
-      await firestore
-        .collection("students")
-        .doc(creatorId)
-        .update({
-          groupsId: [newGroupId],
-        });
+    // Creating group with info
+    await firestore.collection("groups").doc(newGroupId).set({
+      assignmentId,
+      isOpen: true,
+      leaderId: studentId,
+      membersCount: 1,
+      membersId: [],
+    });
+
+    // Update groupsId reference array of student
+    await firestore
+      .collection("students")
+      .doc(studentId)
+      .update({
+        groupsId: FieldValue.arrayUnion(newGroupId),
+      });
+
+    // TODO: Notification
+    // TODO: Email
+
     res.status(200).send("Group created");
   } catch (error) {
     res.status(400).send(error.message);
@@ -236,6 +241,144 @@ export const getBookings = async (
     });
 
     res.status(200).send(bookingData);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+export const joinGroup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Requester details
+    const {
+      studentId,
+      groupId,
+      email,
+    }: { studentId: string; groupId: string; email: string } = req.body;
+
+    const groupRef = firestore.collection("groups").doc(groupId);
+    const groupSnapshot = await groupRef.get();
+    if (groupSnapshot.exists) {
+      const {
+        isOpen,
+        assignmentId,
+        membersCount,
+        membersId,
+        leaderId,
+      } = groupSnapshot.data()!;
+      if (isOpen) {
+        const membersAffectedRef = firestore
+          .collection("students")
+          .where(FieldPath.documentId(), "in", [...membersId, leaderId]);
+        const query = await membersAffectedRef.get();
+        const affectedEmails: string[] = [];
+        query.forEach((doc) => {
+          const { email } = doc.data()!;
+          affectedEmails.push(email);
+        });
+
+        const assignmentRef = firestore
+          .collection("assignments")
+          .doc(assignmentId);
+        const assignmentSnapshot = await assignmentRef.get();
+        const { maxStudent } = assignmentSnapshot.data()!;
+        const willMembersCount = membersCount + 1;
+        if (willMembersCount < maxStudent) {
+          await groupRef.update({
+            membersId: FieldValue.arrayUnion(studentId),
+            membersCount: willMembersCount,
+          });
+        } else {
+          await groupRef.update({
+            membersId: FieldValue.arrayUnion(studentId),
+            membersCount: willMembersCount,
+            isOpen: false,
+          });
+        }
+
+        await firestore
+          .collection("students")
+          .doc(studentId)
+          .update({
+            groupsId: FieldValue.arrayUnion(groupId),
+          });
+
+        // Send Emails
+        // Send Notifications
+      } else {
+        res
+          .status(403)
+          .send("The group is eihter full or unavailable. Try another one.");
+      }
+    } else {
+      res.status(404).send("The group does not exist");
+    }
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+let matchmakeQueue: {
+  assignmentId: string;
+  studentId: string;
+  email: string;
+}[] = [];
+export const matchmake = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      assignmentId,
+      studentId,
+      email,
+    }: { assignmentId: string; studentId: string; email: string } = req.body;
+    matchmakeQueue.push({ assignmentId, studentId, email });
+    const assignmentRef = firestore.collection("assignments").doc(assignmentId);
+    const assignmentSnapshot = await assignmentRef.get();
+    const { maxStudent } = assignmentSnapshot.data()!;
+
+    const sameAssignment = matchmakeQueue.filter(
+      (request) => request.assignmentId === assignmentId
+    );
+    if (sameAssignment.length == maxStudent) {
+      matchmakeQueue = matchmakeQueue.filter(
+        (request) => request.assignmentId !== assignmentId
+      );
+      const newGroupId = generate();
+      const studentsId = sameAssignment.map((s) => s.studentId);
+
+      // Update students groupIds
+      studentsId.forEach(async (id) => {
+        await firestore
+          .collection("students")
+          .doc(id)
+          .update({
+            groupsId: FieldValue.arrayUnion(newGroupId),
+          });
+      });
+
+      // Randomly select leader
+      const randomized = randomPop(studentsId);
+
+      // Create new group
+      await firestore.collection("groups").doc(newGroupId).set({
+        assignmentId,
+        isOpen: false,
+        leaderId: randomized.removedItem,
+        membersId: randomized.arr,
+        isSubmitted: false,
+      });
+
+      const emails = sameAssignment.map((s) => s.email);
+      console.log(emails);
+    }
+
+    res.status(200).send("Placed into queue.");
   } catch (error) {
     res.status(400).send(error.message);
   }
