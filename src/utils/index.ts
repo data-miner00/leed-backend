@@ -200,3 +200,9 @@ export const randomChoice = (arr: Array<any>) => {
   const size = arr.length;
   return arr[Math.floor(Math.random() * size)];
 };
+
+export const randomPop = (arr: Array<any>) => {
+  const size: number = arr.length;
+  const removedItem: any = arr.splice(Math.floor(Math.random() * size), 1)[0];
+  return { removedItem, arr };
+};
