@@ -1,5 +1,6 @@
 import { db as firebase, FieldPath } from "../database";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, query } from "express";
+import transporter from "../nodemailer";
 
 const firestore = firebase.firestore();
 
@@ -153,3 +154,60 @@ export const getSomeDetails = async (
 //     res.status(400).send(error.message);
 //   }
 // }
+
+export const getSomeDetailsLecturer = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const lecturerId = req.params.lecturerId;
+    const subjectQuery = firestore
+      .collection("subjects")
+      .where("lecturerId", "==", lecturerId);
+    const querySnapshot = await subjectQuery.get();
+    const allAssignmentsId: [][] = [];
+    const subjects: { id: string; name: string }[] = [];
+    const someDetails: Object[] = [];
+    querySnapshot.forEach((doc) => {
+      const { assignmentsId, name } = doc.data()!;
+      allAssignmentsId.push(assignmentsId);
+      subjects.push({
+        id: doc.id,
+        name,
+      });
+    });
+    console.log(allAssignmentsId);
+    const assignmentsQuery = firestore
+      .collection("assignments")
+      .where(FieldPath.documentId(), "in", allAssignmentsId.flat());
+    const aQuerySnapshot = await assignmentsQuery.get();
+    aQuerySnapshot.forEach((doc) => {
+      const { subjectCode, assignNo } = doc.data()!;
+      someDetails.push({
+        assignmentId: doc.id,
+        subjectCode,
+        subjectTitle: subjects.find((s) => s.id == subjectCode)?.name,
+        assignNo,
+      });
+    });
+
+    res.status(200).send(someDetails);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+  // let mailOptions = {
+  //   from: "noreply2708@gmail.com",
+  //   to: "pkay_@live.com",
+  //   subject: "Testing and Testing",
+  //   text: "It works",
+  // };
+
+  // transporter.sendMail(mailOptions, (err, data) => {
+  //   if (err) {
+  //     res.status(400).send(err);
+  //   } else {
+  //     res.status(200).send("Email sent!!!");
+  //   }
+  // });
+};
