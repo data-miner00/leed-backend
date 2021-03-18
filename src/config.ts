@@ -32,8 +32,11 @@ export default {
     messagingSenderId: MESSAGING_SENDER_ID,
     appId: APP_ID,
   },
-  emailConfig: {
-    email: EMAIL,
-    password: EMAIL_PASSWORD,
+  nodemailerConfig: {
+    service: "gmail",
+    auth: {
+      user: EMAIL,
+      pass: EMAIL_PASSWORD,
+    },
   },
 };
