@@ -18,16 +18,18 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads");
-  },
-  filename: (req, file, cb) => {
-    const { originalname } = file;
-    cb(null, originalname);
-  },
-});
-app.use(multer({ storage }).array("docs"));
+// Multer
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "uploads");
+//   },
+//   filename: (req, file, cb) => {
+//     const { originalname } = file;
+//     cb(null, originalname);
+//   },
+// });
+// app.use(multer({ storage }).array("docs"));
+//
 
 app.use("/api", studentRoutes.routes);
 app.use("/api", credentialRoutes.routes);
@@ -41,8 +43,8 @@ app.get("/", async (req: Request, res: Response, next: NextFunction) => {
   res.send("hello");
 });
 
-app.post("/upload", async (req: Request, res: Response, next: NextFunction) => {
-  console.dir(req.files);
-});
+// app.post("/upload", async (req: Request, res: Response, next: NextFunction) => {
+//   console.dir(req.files);
+// });
 
 app.listen(configs.port, (): void => console.log("Server ready"));
