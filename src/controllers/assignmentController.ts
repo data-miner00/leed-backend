@@ -1,6 +1,7 @@
-import { db as firebase, FieldPath } from "../database";
+import { db as firebase, FieldPath, FieldValue } from "../database";
 import { Request, Response, NextFunction, query } from "express";
 import transporter from "../nodemailer";
+import { generate } from "short-uuid";
 
 const firestore = firebase.firestore();
 
@@ -29,10 +30,14 @@ export const setAssignment = async (
   next: NextFunction
 ) => {
   try {
-    const assignmentId = req.body.id;
-    delete req.body.id;
+    const subjectCode = req.body.subjectCode;
+    const assignmentId = generate();
     const assignmentRef = firestore.collection("assignments").doc(assignmentId);
     await assignmentRef.set(req.body);
+    const subjectRef = firestore.collection("subjects").doc(subjectCode);
+    await subjectRef.update({
+      assignmentsId: FieldValue.arrayUnion(assignmentId),
+    });
     res.status(200).send("ok");
   } catch (error) {
     res.status(400).send(error.message);
@@ -142,18 +147,36 @@ export const getSomeDetails = async (
   }
 };
 
-// export const assignmentSubmit = (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const affectedPeoplesId = req.body;
-//     await firestore.collection("notifications").doc().set({});
-//   } catch (error) {
-//     res.status(400).send(error.message);
-//   }
-// }
+// Student submit assignment
+export const assignmentSubmit = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // const affectedPeoplesId = req.body;
+    // await firestore.collection("notifications").doc().set({});
+    console.log(req.file.originalname);
+    console.log(req.file);
+    res.status(200).send({});
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+// Lecturer upload assignment
+export const assignmentQuestionUpload = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    //
+    res.status(200).send({});
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
 
 export const getSomeDetailsLecturer = async (
   req: Request,
