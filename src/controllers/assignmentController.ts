@@ -1,10 +1,27 @@
 import { db as firebase, FieldPath, FieldValue } from "../database";
-import { Request, Response, NextFunction, query } from "express";
+import { Request, Response, NextFunction } from "express";
 import transporter from "../nodemailer";
 import { generate } from "short-uuid";
 
 const firestore = firebase.firestore();
 
+/**
+ *  Get assignment details by its id.
+ *
+ *  @param {string} id (as assignment id)
+ *
+ *  @returns {Object}
+ *
+ *  {
+ *    assignNo: number,
+ *    description: string,
+ *    dueDate: Timestamp,
+ *    language: string,
+ *    maxStudent: number,
+ *    subjectCode: string,
+ *    title: string
+ *  }
+ */
 export const getAssignment = async (
   req: Request,
   res: Response,
@@ -24,6 +41,30 @@ export const getAssignment = async (
   }
 };
 
+/**
+ *  Create assignment for a course.
+ *
+ *  @param {Object} req.body
+ *  {
+ *    assignNo: number,
+ *    description: string,
+ *    dueDate: string,
+ *    language: string,
+ *    maxStudent: string,
+ *    subjectCode: string,
+ *    title?: string,
+ *  }
+ *
+ *  @logic
+ *  After receiving the subjectCode, the subject for this assignment
+ *  was able to be identified.
+ *
+ *  Create a random id for the assignment and save to database with
+ *  the provided req.body.
+ *
+ *  Update the subject item by adding the new assignment id into the
+ *  assignmentsId array.
+ */
 export const setAssignment = async (
   req: Request,
   res: Response,
@@ -44,6 +85,33 @@ export const setAssignment = async (
   }
 };
 
+/**
+ *  Get some details to show at the 'assignments' screen in front-end for
+ *  student.
+ *
+ *  @param {string} req.body
+ *
+ *  {
+ *    subjectsId: string[],  // student's joined subject
+ *    groupsId: string[]     // student's already formed assignment group
+ *  }
+ *
+ *  @logic
+ *  Perform a lot of complex computations just to get
+ *
+ *  @returns {Array<Object>}
+ *
+ *  Array
+ *    {
+ *      subjectCode: string,
+ *      subjectTitle: string,
+ *      assignmentId: string,
+ *      assignNo: number,
+ *      groupId: string,
+ *      language: string
+ *    }
+ *
+ */
 export const getSomeDetails = async (
   req: Request,
   res: Response,
@@ -147,6 +215,20 @@ export const getSomeDetails = async (
   }
 };
 
+/**
+ *  Calls after students have submitted an assignment.
+ *
+ *  @param {Object} req.body
+ *
+ *  {
+ *    groupId: string,  //
+ *    affectedPeoplesId?: Array<string>,
+ *
+ *  }
+ *
+ *  @logic
+ *
+ */
 // Student submit assignment
 export const assignmentSubmit = async (
   req: Request,
@@ -178,6 +260,31 @@ export const assignmentQuestionUpload = async (
   }
 };
 
+/**
+ *  Same thing for student's assignments view, but this is
+ *  for lecturer's view.
+ *
+ *  @param {string} req.params.id
+ *
+ *  @returns {Object}
+ *
+ *  {
+ *    assignmentId: string,
+ *    assignNo: number,
+ *    subjectCode: string,
+ *    subjectTitle: string
+ *  }
+ *
+ *  @logic
+ *  Using the lecturer id, query the subjects that is being taught.
+ *  From there store the subject's code and name in an array.
+ *  Store the array of assignments of that particular course into an
+ *  array as well.
+ *  Flatten the array of assignmentsId to query for each of them.
+ *  Parse the details obtained so far into the return object as shown
+ *  above.
+ *
+ */
 export const getSomeDetailsLecturer = async (
   req: Request,
   res: Response,
