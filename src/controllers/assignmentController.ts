@@ -1,8 +1,8 @@
-import { db as firebase, FieldPath, FieldValue } from "../database";
+import { db as firebase, FieldPath, FieldValue, Timestamp } from "../database";
 import { Request, Response, NextFunction } from "express";
 import transporter from "../nodemailer";
 import { generate } from "short-uuid";
-import { dateToTimestamp } from "../utils";
+import { dateToTimestamp, getStringMonth, getAMPM } from "../utils";
 
 const firestore = firebase.firestore();
 
@@ -223,13 +223,9 @@ export const getSomeDetails = async (
 /**
  *  Calls after students have submitted an assignment.
  *
- *  @param {Object} req.body
+ *  @param {string, string}
  *
- *  {
- *    groupId: string,  //
- *    affectedPeoplesId?: Array<string>,
  *
- *  }
  *
  *  @logic
  *
@@ -241,11 +237,48 @@ export const assignmentSubmit = async (
   next: NextFunction
 ) => {
   try {
-    // const affectedPeoplesId = req.body;
-    // await firestore.collection("notifications").doc().set({});
-    console.log(req.file.originalname);
+    const assignmentId = req.params.id;
+    const groupId = req.params.groupId;
+    const groupRef = firestore.collection("groups").doc(groupId);
+    const groupSnapshot = await groupRef.get();
+    const assignmentRef = firestore.collection("assignments").doc(assignmentId);
+    const assignmentSnapshot = await assignmentRef.get();
+    const { membersId, leaderId } = groupSnapshot.data()!;
+    const { assignNo, subjectCode } = assignmentSnapshot.data()!;
+    const date = new Date();
+    // Query basic info of leader
+    const leaderSnapshot = await firestore
+      .collection("students")
+      .doc(leaderId)
+      .get();
+    const { avatarUri, name } = leaderSnapshot.data()!;
+
+    // Create notification
+    await firestore
+      .collection("notifications")
+      .doc()
+      .set({
+        actor: leaderId,
+        actorAvatarUri: avatarUri,
+        actorName: name,
+        createdAt: Timestamp.fromDate(date),
+        message: `Assignment #${assignNo} for subject ${subjectCode} has been submitted by
+      ${name} on ${getStringMonth(
+          date.getMonth()
+        )} ${date.getDate()}, ${date.getHours()}
+      ${getAMPM(date.getHours())}.`,
+        type: "assignmentSubmit",
+        recipients: membersId,
+      });
+
+    // Update assignment status
+    await groupRef.update({
+      submissionStatus: true,
+      submissionDate: Timestamp.fromDate(date),
+      filename: req.file.originalname,
+    });
     console.log(req.file);
-    res.status(200).send({});
+    res.status(200).send("Success");
   } catch (error) {
     res.status(400).send(error.message);
   }
