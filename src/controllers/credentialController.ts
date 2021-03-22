@@ -4,6 +4,23 @@ import { MD5 } from "jshashes";
 
 const firestore = firebase.firestore();
 
+/**
+ *  Check validity of login credentials of users.
+ *
+ *  @param {Object} req.body
+ *
+ *  {
+ *    userId: string,
+ *    password: string
+ *  }
+ *
+ *  @return 404 when user not found
+ *
+ *  @return 403 if password incorrect
+ *
+ *  @return 200 user verified
+ *
+ */
 export const verifyCredentials = async (
   req: Request,
   res: Response,
