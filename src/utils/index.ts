@@ -12,6 +12,13 @@ export const timestampToDate = ({
   seconds: number;
   nanoseconds: number;
 }) => {
+  const date = new Date(seconds * 1e3 + nanoseconds / 1e6);
+  return `${getStringMonth(
+    date.getMonth()
+  )} ${date.getDate()}, ${date.getFullYear()}`;
+};
+
+export const getStringMonth = (index: number) => {
   const months = [
     "January",
     "Febrauary",
@@ -26,9 +33,7 @@ export const timestampToDate = ({
     "November",
     "December",
   ];
-
-  const date = new Date(seconds * 1e3 + nanoseconds / 1e6);
-  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  return months[index];
 };
 
 export const timestampGetTime = ({
