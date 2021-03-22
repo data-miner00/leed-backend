@@ -2,6 +2,7 @@ import { db as firebase, FieldPath, FieldValue } from "../database";
 import { Request, Response, NextFunction } from "express";
 import transporter from "../nodemailer";
 import { generate } from "short-uuid";
+import { dateToTimestamp } from "../utils";
 
 const firestore = firebase.firestore();
 
@@ -42,7 +43,7 @@ export const getAssignment = async (
 };
 
 /**
- *  Create assignment for a course.
+ *  Create assignment for a course. (VERIFIED)
  *
  *  @param {Object} req.body
  *  {
@@ -62,6 +63,8 @@ export const getAssignment = async (
  *  Create a random id for the assignment and save to database with
  *  the provided req.body.
  *
+ *  Replace the string due date by Firebase Timestamp object.
+ *
  *  Update the subject item by adding the new assignment id into the
  *  assignmentsId array.
  */
@@ -74,6 +77,8 @@ export const setAssignment = async (
     const subjectCode = req.body.subjectCode;
     const assignmentId = generate();
     const assignmentRef = firestore.collection("assignments").doc(assignmentId);
+    const stringDate = req.body.dueDate;
+    req.body.dueDate = dateToTimestamp(stringDate);
     await assignmentRef.set(req.body);
     const subjectRef = firestore.collection("subjects").doc(subjectCode);
     await subjectRef.update({
