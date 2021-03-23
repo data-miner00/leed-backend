@@ -1,7 +1,7 @@
 import { db as firebase, FieldPath, FieldValue } from "../database";
 import { Request, Response, NextFunction } from "express";
 import { generate } from "short-uuid";
-import { bookingAlgorithm, randomPop } from "../utils";
+import { bookingAlgorithm, randomPop, timestampToDate } from "../utils";
 
 const firestore = firebase.firestore();
 
@@ -430,6 +430,7 @@ export const getGroupAndAssignment = async (
       maxStudent,
       assignmentDoc,
       subjectCode,
+      language,
     } = assignmentSnapshot.data()!;
 
     const subjectTitle: string = await (async (subjectCode: string) => {
@@ -451,7 +452,9 @@ export const getGroupAndAssignment = async (
       submissionStatus,
       assignNo,
       description,
-      dueDate,
+      assignmentId,
+      dueDate: timestampToDate(dueDate),
+      language,
       maxStudent,
       assignmentDoc,
       subjectCode,
