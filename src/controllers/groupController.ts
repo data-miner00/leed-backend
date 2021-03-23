@@ -308,6 +308,7 @@ export const joinGroup = async (
 
         // Send Emails
         // Send Notifications
+        res.status(200).send("ok");
       } else {
         res
           .status(403)
@@ -379,6 +380,101 @@ export const matchmake = async (
     }
 
     res.status(200).send("Placed into queue.");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+export const getGroupAndAssignment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const groupId = req.params.id;
+    const groupRef = firestore.collection("groups").doc(groupId);
+    const groupSnapshot = await groupRef.get();
+    const {
+      leaderId,
+      membersId,
+      filename,
+      submissionStatus,
+      submissionDate,
+      assignmentId,
+    } = groupSnapshot.data()!;
+    const assignmentRef = firestore.collection("assignments").doc(assignmentId);
+    const assignmentSnapshot = await assignmentRef.get();
+    const leaderSnapshot = await firestore
+      .collection("students")
+      .doc(leaderId)
+      .get();
+    const { id, name, avatarUri } = leaderSnapshot.data()!;
+    const membersRef = firestore
+      .collection("students")
+      .where(FieldPath.documentId(), "in", membersId);
+    const membersSnapshot = await membersRef.get();
+    const members: Object[] = [];
+
+    membersSnapshot.forEach((doc) => {
+      const { id, name, avatarUri } = doc.data()!;
+      members.push({
+        id,
+        name,
+        avatarUri,
+      });
+    });
+    const {
+      assignNo,
+      description,
+      dueDate,
+      maxStudent,
+    } = assignmentSnapshot.data()!;
+    res.status(200).send({
+      leader: {
+        id,
+        name,
+        avatarUri,
+      },
+      members,
+      filename: filename || "",
+      submissionStatus,
+      assignNo,
+      description,
+      dueDate,
+      maxStudent,
+    });
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+export const openGroup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const groupId = req.params.id;
+    await firestore.collection("groups").doc(groupId).update({
+      isOpen: true,
+    });
+    res.status(200).send("Opened");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+export const closeGroup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const groupId = req.params.id;
+    await firestore.collection("groups").doc(groupId).update({
+      isOpen: false,
+    });
+    res.status(200).send("Group closed");
   } catch (error) {
     res.status(400).send(error.message);
   }
