@@ -9,6 +9,9 @@ import {
   getBookings,
   joinGroup,
   matchmake,
+  getGroupAndAssignment,
+  openGroup,
+  closeGroup,
 } from "../controllers/groupController";
 
 const router: Router = Router();
@@ -22,6 +25,9 @@ router.post("/group/:id/booking", addBooking);
 router.get("/group/:id/booking", getBookings);
 router.post("/group/join", joinGroup);
 router.post("/group/matchmake", matchmake);
+router.get("/group/:id/extended/v1", getGroupAndAssignment);
+router.patch("/group/:id/open", openGroup);
+router.patch("/group/:id/close", closeGroup);
 
 export default {
   routes: router,
