@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import transporter from "../nodemailer";
 import { generate } from "short-uuid";
 import { dateToTimestamp, getStringMonth, getAMPM } from "../utils";
+import path from "path";
 
 const firestore = firebase.firestore();
 
@@ -381,4 +382,55 @@ export const getSomeDetailsLecturer = async (
   //     res.status(200).send("Email sent!!!");
   //   }
   // });
+};
+
+/**
+ *  Download assignments uploaded by students.
+ *
+ *  @param {string} req.params.filename
+ *
+ *  @returns {File}
+ */
+export const downloadStudentAssignment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const filename = req.params.filename;
+    console.log(filename);
+    const absolutePath = path.join(
+      __dirname,
+      "../../",
+      "uploads",
+      "assignments"
+    );
+    const filepath = path.join(absolutePath, filename);
+    res.status(200).download(filepath);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+/**
+ *  Download assignment questions uploaded by lecturer.
+ *
+ *  @param {string} req.params.filename
+ *
+ *  @returns {File}
+ */
+export const downloadAssignmentQuestion = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const filename = req.params.filename;
+    console.log(filename);
+    const absolutePath = path.join(__dirname, "../../", "uploads", "questions");
+    const filepath = path.join(absolutePath, filename);
+    res.status(200).download(filepath);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
