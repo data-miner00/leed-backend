@@ -428,7 +428,18 @@ export const getGroupAndAssignment = async (
       description,
       dueDate,
       maxStudent,
+      assignmentDoc,
+      subjectCode,
     } = assignmentSnapshot.data()!;
+
+    const subjectTitle: string = await (async (subjectCode: string) => {
+      const subjectSnapshot = await firestore
+        .collection("subjects")
+        .doc(subjectCode)
+        .get();
+      return subjectSnapshot.data()!.name;
+    })(subjectCode);
+
     res.status(200).send({
       leader: {
         id,
@@ -442,6 +453,9 @@ export const getGroupAndAssignment = async (
       description,
       dueDate,
       maxStudent,
+      assignmentDoc,
+      subjectCode,
+      subjectTitle,
     });
   } catch (error) {
     res.status(400).send(error.message);
