@@ -223,11 +223,14 @@ export const getSomeDetails = async (
 /**
  *  Calls after students have submitted an assignment.
  *
- *  @param {string, string}
- *
+ *  @param {string} req.params.id
+ *  @param {string} req.params.groupId
  *
  *
  *  @logic
+ *  Getting some details of leader to set a notification and then
+ *  update the group assignment status to submitted, with filename,
+ *  and submission time.
  *
  */
 // Student submit assignment
@@ -274,7 +277,7 @@ export const assignmentSubmit = async (
     // Update assignment status
     await groupRef.update({
       submissionStatus: true,
-      submissionDate: Timestamp.fromDate(date),
+      submissionDate: Timestamp.fromDate(date), // can change to fieldvalue
       filename: req.file.originalname,
     });
     console.log(req.file);
