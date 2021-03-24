@@ -5,6 +5,26 @@ import { bookingAlgorithm, randomPop, timestampToDate } from "../utils";
 
 const firestore = firebase.firestore();
 
+/**
+ *  Create an assignment group for students.
+ *
+ *  @param {Object} req.body
+ *
+ *  {
+ *    assignmentId: string,
+ *    studentId: string
+ *  }
+ *
+ *  @logic
+ *
+ *  Generate a unique Id for the group.
+ *
+ *  Create a group with default info in database.
+ *
+ *  Update the student's groupsId array.
+ *
+ *
+ */
 export const createGroup = async (
   req: Request,
   res: Response,
@@ -43,6 +63,30 @@ export const createGroup = async (
   }
 };
 
+/**
+ *  Retrieves the informations of a group.
+ *
+ *  @param {string} req.params.id groupId
+ *
+ *  @returns {Object}
+ *
+ *  {
+ *    assignmentId: string,
+ *    confirmedTime: {
+ *      day: string,
+ *      endTime: number,
+ *      startTime: number
+ *    },
+ *    filename: string,
+ *    isOpen: boolean,
+ *    leaderId: string,
+ *    membersCount: number,
+ *    membersId: Array<string>
+ *    submissionDate: Timestamp
+ *    submissionStatus: boolean
+ *  }
+ *
+ */
 export const getGroup = async (
   req: Request,
   res: Response,
@@ -60,6 +104,23 @@ export const getGroup = async (
   }
 };
 
+/**
+ *  Get all the gantts within a group.
+ *
+ *  @param {string} req.params.id groupId
+ *
+ *  @returns {Array<Object>}
+ *  Array
+ *    {
+ *      ganttId: string,
+ *      id: string            // groupId lol
+ *      activity: string,
+ *      assigneeId: string,
+ *      deadline: string,
+ *      from: number,
+ *      to: number
+ *    }
+ */
 export const getAllGantt = async (
   req: Request,
   res: Response,
@@ -78,7 +139,7 @@ export const getAllGantt = async (
 
     ganttSnapshot.forEach((doc) => {
       ganttData.push({
-        id: doc.id,
+        ganttId: doc.id,
         ...doc.data(),
       });
     });
@@ -107,6 +168,49 @@ export const addGantt = async (
       .set(gantt);
 
     res.status(200).send("Created");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+export const updateGantt = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const groupId = req.params.id;
+    const ganttId = req.params.ganttId;
+    const ganttRef = firestore
+      .collection("groups")
+      .doc(groupId)
+      .collection("gantts")
+      .doc(ganttId);
+    await ganttRef.update(req.body);
+
+    res.status(200).send("replaced");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+export const deleteGantt = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const groupId = req.params.id;
+    const ganttId = req.params.ganttId;
+    const ganttRef = firestore
+      .collection("groups")
+      .doc(groupId)
+      .collection("gantt")
+      .doc(ganttId);
+
+    await ganttRef.delete();
+
+    res.status(200).send("deleted!");
   } catch (error) {
     res.status(400).send(error.message);
   }

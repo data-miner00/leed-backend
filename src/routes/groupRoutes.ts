@@ -12,6 +12,8 @@ import {
   getGroupAndAssignment,
   openGroup,
   closeGroup,
+  updateGantt,
+  deleteGantt,
 } from "../controllers/groupController";
 
 const router: Router = Router();
@@ -28,6 +30,9 @@ router.post("/group/matchmake", matchmake);
 router.get("/group/:id/extended/v1", getGroupAndAssignment);
 router.patch("/group/:id/open", openGroup);
 router.patch("/group/:id/close", closeGroup);
+
+router.patch("/group/:id/gantt/:ganttId", updateGantt);
+router.delete("/group/:id/gantt/:ganttId", deleteGantt);
 
 export default {
   routes: router,
