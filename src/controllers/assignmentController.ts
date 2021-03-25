@@ -288,6 +288,21 @@ export const assignmentSubmit = async (
   }
 };
 
+/**
+ *  Lecturer uploads the assignment question.
+ *
+ *  @param {string} req.params.id assignmentId
+ *
+ *  @logic
+ *
+ *  Update the assignment's document about the filename
+ *
+ *  Query the students that are participating this subject.
+ *
+ *  Get the participating student's id into an array.
+ *
+ *  Create new notifications based on info gathered.
+ */
 // Lecturer upload assignment
 export const assignmentQuestionUpload = async (
   req: Request,
@@ -296,7 +311,38 @@ export const assignmentQuestionUpload = async (
 ) => {
   try {
     //
-    res.status(200).send({});
+    const assignmentId = req.params.id;
+    const assignmentRef = firestore.collection("assignments").doc(assignmentId);
+    const { subjectCode, assignNo } = (await assignmentRef.get()).data()!;
+    const subjectRef = firestore.collection("subjects").doc(subjectCode);
+    const { name, lecturerId } = (await subjectRef.get()).data()!;
+    const lecturerRef = firestore.collection("lecturer").doc(lecturerId);
+    const lecturerData = (await lecturerRef.get()).data()!;
+    await assignmentRef.update({
+      filename: req.file.originalname,
+    });
+    const studentQuery = firestore
+      .collection("students")
+      .where("subjectsId", "array-contains", subjectCode);
+    const querySnapshot = await studentQuery.get();
+    const involvedStudentsId: Array<string> = [];
+    querySnapshot.forEach((doc) => {
+      involvedStudentsId.push(doc.id);
+    });
+    await firestore
+      .collection("notifications")
+      .doc()
+      .set({
+        actor: lecturerId,
+        actorAvatarUri: lecturerData.avatarUri,
+        actorName: lecturerData.name,
+        recipients: involvedStudentsId,
+        createdAt: FieldValue.serverTimestamp(),
+        message: `${lecturerData.name} has uploaded assignment question for ${subjectCode} ${name} Assignment ${assignNo}!
+      Please check the download link of the question document.`,
+        type: "assignmentRelease",
+      });
+    res.status(200).send("Ok");
   } catch (error) {
     res.status(400).send(error.message);
   }
