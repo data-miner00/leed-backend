@@ -192,7 +192,7 @@ export const getSomeDetails = async (
     });
 
     assignmentsSnapshot.forEach((doc) => {
-      const { subjectCode, assignNo, language } = doc.data();
+      const { subjectCode, assignNo, language, filename } = doc.data();
 
       const groupId =
         groups.find((g) =>
@@ -208,6 +208,7 @@ export const getSomeDetails = async (
         groupId,
         language,
         assignmentId: doc.id,
+        filename,
       });
       if (groupId != "") {
         const indexInGroups = groups.map((g) => g.id).indexOf(groupId);
