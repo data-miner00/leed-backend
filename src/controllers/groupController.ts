@@ -2,11 +2,12 @@ import { db as firebase, FieldPath, FieldValue } from "../database";
 import { Request, Response, NextFunction } from "express";
 import { generate } from "short-uuid";
 import { bookingAlgorithm, randomPop, timestampToDate } from "../utils";
+import transporter from "../nodemailer";
 
 const firestore = firebase.firestore();
 
 /**
- *  Create an assignment group for students.
+ *  Create an assignment group for students. VERIFIED
  *
  *  @param {Object} req.body
  *
@@ -44,6 +45,7 @@ export const createGroup = async (
       leaderId: studentId,
       membersCount: 1,
       membersId: [],
+      submissionStatus: false,
     });
 
     // Update groupsId reference array of student
@@ -53,9 +55,6 @@ export const createGroup = async (
       .update({
         groupsId: FieldValue.arrayUnion(newGroupId),
       });
-
-    // TODO: Notification
-    // TODO: Email
 
     res.status(200).send("Group created");
   } catch (error) {
@@ -173,6 +172,17 @@ export const addGantt = async (
   }
 };
 
+/**
+ *  Updates a gantt activity details.
+ *
+ *  @param {string} req.params.id groupId
+ *  @param {string} req.params.ganttId ganttId
+ *  @param {Object} req.body
+ *  {
+ *    *
+ *  }
+ *
+ */
 export const updateGantt = async (
   req: Request,
   res: Response,
@@ -194,6 +204,14 @@ export const updateGantt = async (
   }
 };
 
+/**
+ *  Deletes a gantt activity of a group.
+ *
+ *  @param {string} req.params.id groupId
+ *  @param {string} req.params.ganttId ganttId
+ *
+ *
+ */
 export const deleteGantt = async (
   req: Request,
   res: Response,
@@ -216,6 +234,9 @@ export const deleteGantt = async (
   }
 };
 
+/**
+ *
+ */
 export const getGroupMembers = async (
   req: Request,
   res: Response,
@@ -350,6 +371,35 @@ export const getBookings = async (
   }
 };
 
+/**
+ *  Students join an assignment group that already exists in
+ *  the assgienmtne given.
+ *
+ *  @param {Object} req.body
+ *  {
+ *    studentId: string,
+ *    groupId: string,
+ *    email: string,
+ *    assignmentId: string
+ *  }
+ *
+ *  @logic
+ *
+ *  Check to see whether the target group belongs to the same assignment.
+ *
+ *  Check to see if the group is still available for joining.
+ *
+ *  Extract emails of the affected students.
+ *
+ *  Check member count after adding the new member.
+ *
+ *  Update group information.
+ *
+ *  Update reference to requester.
+ *
+ *  Send notifications and emails to the affected students.
+ *
+ */
 export const joinGroup = async (
   req: Request,
   res: Response,
@@ -362,7 +412,7 @@ export const joinGroup = async (
       groupId,
       email,
     }: { studentId: string; groupId: string; email: string } = req.body;
-
+    const senderAssignmentId = req.body.assignmentId;
     const groupRef = firestore.collection("groups").doc(groupId);
     const groupSnapshot = await groupRef.get();
     if (groupSnapshot.exists) {
@@ -373,6 +423,11 @@ export const joinGroup = async (
         membersId,
         leaderId,
       } = groupSnapshot.data()!;
+
+      if (assignmentId !== senderAssignmentId) {
+        return res.status(400).send("The assignment id does not match");
+      }
+
       if (isOpen) {
         const membersAffectedRef = firestore
           .collection("students")
@@ -388,8 +443,15 @@ export const joinGroup = async (
           .collection("assignments")
           .doc(assignmentId);
         const assignmentSnapshot = await assignmentRef.get();
-        const { maxStudent } = assignmentSnapshot.data()!;
+        const {
+          maxStudent,
+          assignNo,
+          subjectCode,
+        } = assignmentSnapshot.data()!;
         const willMembersCount = membersCount + 1;
+
+        // If after adding a student, still have place, just update normally
+        // Else if full set isOpen to false
         if (willMembersCount < maxStudent) {
           await groupRef.update({
             membersId: FieldValue.arrayUnion(studentId),
@@ -403,15 +465,39 @@ export const joinGroup = async (
           });
         }
 
+        const requesterRef = firestore.collection("students").doc(studentId);
+        // Update reference to requester document
+        await requesterRef.update({
+          groupsId: FieldValue.arrayUnion(groupId),
+        });
+
+        // Send Notifications
+        const requesterSnapshot = await requesterRef.get();
+        const { name, avatarUri } = requesterSnapshot.data()!;
         await firestore
-          .collection("students")
-          .doc(studentId)
-          .update({
-            groupsId: FieldValue.arrayUnion(groupId),
+          .collection("notifications")
+          .doc()
+          .set({
+            type: "userJoin",
+            actor: studentId,
+            actorName: name,
+            actorAvatarUri: avatarUri,
+            message: `A friend had joined your assignment group for ${subjectCode} 
+          Assignment ${assignNo}. Welcome him/her!`,
+            createdAt: FieldValue.serverTimestamp(),
+            recipients: [...membersId, leaderId],
           });
 
         // Send Emails
-        // Send Notifications
+        let mailOptions = {
+          from: "noreply2708@gmail.com",
+          to: "pkay_@live.com",
+          subject: "Testing and Testing",
+          text: "It works",
+        };
+
+        transporter.sendMail(mailOptions, (err, data) => {});
+
         res.status(200).send("ok");
       } else {
         res
@@ -513,20 +599,23 @@ export const getGroupAndAssignment = async (
       .doc(leaderId)
       .get();
     const { id, name, avatarUri } = leaderSnapshot.data()!;
-    const membersRef = firestore
-      .collection("students")
-      .where(FieldPath.documentId(), "in", membersId);
-    const membersSnapshot = await membersRef.get();
     const members: Object[] = [];
 
-    membersSnapshot.forEach((doc) => {
-      const { id, name, avatarUri } = doc.data()!;
-      members.push({
-        id,
-        name,
-        avatarUri,
+    if (membersId && membersId.length > 0) {
+      const membersRef = firestore
+        .collection("students")
+        .where(FieldPath.documentId(), "in", membersId);
+      const membersSnapshot = await membersRef.get();
+
+      membersSnapshot.forEach((doc) => {
+        const { id, name, avatarUri } = doc.data()!;
+        members.push({
+          id,
+          name,
+          avatarUri,
+        });
       });
-    });
+    }
     const {
       assignNo,
       description,
