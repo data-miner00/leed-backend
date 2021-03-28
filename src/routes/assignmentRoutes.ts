@@ -22,15 +22,16 @@ router.post("/assignment", setAssignment);
 router.post("/assignment/overview", getSomeDetails);
 router.get("/assignment/:lecturerId/overview", getSomeDetailsLecturer);
 router.post(
+  "/assignment/:id/upload/ques",
+  multer({ storage: questionStorage }).single("quest"),
+  assignmentQuestionUpload
+);
+router.post(
   "/assignment/:id/upload/:groupId",
   multer({ storage: assignmentStorage }).single("docs"),
   assignmentSubmit
 );
-router.post(
-  "/assignment/:id/upload/ques",
-  multer({ storage: questionStorage }).single("ques"),
-  assignmentQuestionUpload
-);
+
 router.get("/assignment/submitted/:filename", downloadStudentAssignment);
 router.get("/assignment/question/:filename", downloadAssignmentQuestion);
 router.get("/assignment/:id/data", supplyAssignmentData);
