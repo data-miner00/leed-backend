@@ -18,6 +18,23 @@ export const timestampToDate = ({
   )} ${date.getDate()}, ${date.getFullYear()}`;
 };
 
+/**
+ *  Returns date string from timestamp object.
+ *
+ *  @param {Object}
+ *  @returns {string} eg. 2012-01-01
+ */
+export const timestampToDate2 = ({
+  seconds,
+  nanoseconds,
+}: {
+  seconds: number;
+  nanoseconds: number;
+}): string => {
+  const date = new Date(seconds * 1e3 + nanoseconds / 1e6);
+  return date.toISOString().substr(0, 10);
+};
+
 export const getStringMonth = (index: number): string => {
   const months = [
     "January",
