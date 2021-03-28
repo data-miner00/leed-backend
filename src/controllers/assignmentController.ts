@@ -551,7 +551,8 @@ export const updateAssignment = async (
   try {
     const assignmentId = req.params.id;
     const updatedDetails = req.body;
-
+    const { dueDate } = req.body!;
+    updatedDetails.dueDate = dateToTimestamp(dueDate);
     await firestore
       .collection("assignments")
       .doc(assignmentId)
