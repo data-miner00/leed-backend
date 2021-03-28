@@ -93,7 +93,7 @@ export const setAssignment = async (
 
 /**
  *  Get some details to show at the 'assignments' screen in front-end for
- *  student.
+ *  student. BUGGED
  *
  *  @param {string} req.body
  *
@@ -477,6 +477,45 @@ export const downloadAssignmentQuestion = async (
     const absolutePath = path.join(__dirname, "../../", "uploads", "questions");
     const filepath = path.join(absolutePath, filename);
     res.status(200).download(filepath);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+/**
+ *
+ */
+export const supplyAssignmentData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const assignmentId = req.params.id;
+    const assignmentRef = firestore.collection("assignments").doc(assignmentId);
+    const assignmentSnapshot = await assignmentRef.get();
+    const { maxStudent, subjectCode } = assignmentSnapshot.data()!;
+    const subjectRef = firestore.collection("subjects").doc(subjectCode);
+    const subjectSnapshot = await subjectRef.get();
+    const { studentsCount } = subjectSnapshot.data()!;
+
+    const dataset1 = await (async (maxStudent: number) => {
+      let queries = [];
+      for (let i = maxStudent; i > 0; i--) {
+        const groupQuery = firestore
+          .collection("groups")
+          .where("assignmentId", "==", assignmentId)
+          .where("membersCount", "==", i);
+        const querySnapshot = await groupQuery.get();
+        const size = querySnapshot.size;
+        queries.push({ name: `${i} Member(s)`, value: size });
+      }
+      return Promise.all(queries);
+    })(maxStudent);
+
+    const dataset2 = 1;
+
+    res.status(200).send({ dataset1, studentsCount });
   } catch (error) {
     res.status(400).send(error.message);
   }
