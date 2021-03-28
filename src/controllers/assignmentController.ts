@@ -520,3 +520,36 @@ export const supplyAssignmentData = async (
     res.status(400).send(error.message);
   }
 };
+
+/**
+ *  Update assignment details. Only usable by lecturer.
+ *
+ *  @param {string} req.params.id assignmentId
+ *
+ *  @param {Object} req.body
+ *
+ *  {
+ *    description: string,
+ *    dueDate: string,
+ *    language: string,
+ *    maxStudent: number,
+ *  }
+ */
+export const updateAssignment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const assignmentId = req.params.id;
+    const updatedDetails = req.body;
+
+    await firestore
+      .collection("assignments")
+      .doc(assignmentId)
+      .update(updatedDetails);
+    res.status(200).send("Successfully updated assignment!");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
