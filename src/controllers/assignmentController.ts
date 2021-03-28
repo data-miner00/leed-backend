@@ -2,7 +2,12 @@ import { db as firebase, FieldPath, FieldValue, Timestamp } from "../database";
 import { Request, Response, NextFunction } from "express";
 import transporter from "../nodemailer";
 import { generate } from "short-uuid";
-import { dateToTimestamp, getStringMonth, getAMPM } from "../utils";
+import {
+  dateToTimestamp,
+  getStringMonth,
+  getAMPM,
+  timestampToDate2,
+} from "../utils";
 import path from "path";
 
 const firestore = firebase.firestore();
@@ -17,7 +22,7 @@ const firestore = firebase.firestore();
  *  {
  *    assignNo: number,
  *    description: string,
- *    dueDate: Timestamp,
+ *    dueDate: string,
  *    language: string,
  *    maxStudent: number,
  *    subjectCode: string,
@@ -34,7 +39,10 @@ export const getAssignment = async (
     const assignmentRef = firestore.collection("assignments").doc(assignmentId);
     const assignmentData = await assignmentRef.get();
     if (assignmentData.exists) {
-      res.status(200).send(assignmentData.data());
+      const data = assignmentData.data();
+      const { dueDate } = assignmentData.data()!;
+      data!.dueDate = timestampToDate2(dueDate);
+      res.status(200).send(data);
     } else {
       res.status(404).send("Assignment with the given ID not found");
     }
