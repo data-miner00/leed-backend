@@ -8,6 +8,7 @@ import {
   assignmentSubmit,
   downloadAssignmentQuestion,
   downloadStudentAssignment,
+  supplyAssignmentData,
 } from "../controllers/assignmentController";
 import multer from "multer";
 import { assignmentStorage, questionStorage } from "../middleware/multer";
@@ -31,6 +32,8 @@ router.post(
 );
 router.get("/assignment/submitted/:filename", downloadStudentAssignment);
 router.get("/assignment/question/:filename", downloadAssignmentQuestion);
+router.get("/assignment/:id/data", supplyAssignmentData);
+// router.patch("/assignment/:id", )
 
 router.get("/test", function (req, res, next) {
   // fs.readdir(
