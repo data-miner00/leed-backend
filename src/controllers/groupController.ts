@@ -667,7 +667,7 @@ export const changeGroupAvailability = async (
 ) => {
   try {
     const groupId = req.params.id;
-    const isOpen = req.body;
+    const { isOpen } = req.body;
     await firestore.collection("groups").doc(groupId).update({
       isOpen,
     });
