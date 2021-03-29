@@ -14,6 +14,7 @@ import {
   closeGroup,
   updateGantt,
   deleteGantt,
+  getChatMessages,
 } from "../controllers/groupController";
 
 const router: Router = Router();
@@ -28,6 +29,7 @@ router.get("/group/:id/booking", getBookings);
 router.post("/group/join", joinGroup);
 router.post("/group/matchmake", matchmake);
 router.get("/group/:id/extended/v1", getGroupAndAssignment);
+router.get("/group/:id/chats", getChatMessages);
 router.patch("/group/:id/open", openGroup);
 router.patch("/group/:id/close", closeGroup);
 

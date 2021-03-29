@@ -689,3 +689,29 @@ export const closeGroup = async (
     res.status(400).send(error.message);
   }
 };
+
+export const getChatMessages = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const groupId = req.params.id;
+    const messagesRef = firestore
+      .collection("groups")
+      .doc(groupId)
+      .collection("messages")
+      .limit(25);
+    const messagesSnapshot = await messagesRef.get();
+    const messages: Object[] = [];
+    messagesSnapshot.forEach((doc) => {
+      messages.push({
+        ...doc.data(),
+        id: doc.id,
+      });
+    });
+    res.status(200).send(messages);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
