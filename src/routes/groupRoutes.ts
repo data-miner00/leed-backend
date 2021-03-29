@@ -10,8 +10,7 @@ import {
   joinGroup,
   matchmake,
   getGroupAndAssignment,
-  openGroup,
-  closeGroup,
+  changeGroupAvailability,
   updateGantt,
   deleteGantt,
   getChatMessages,
@@ -30,8 +29,7 @@ router.post("/group/join", joinGroup);
 router.post("/group/matchmake", matchmake);
 router.get("/group/:id/extended/v1", getGroupAndAssignment);
 router.get("/group/:id/chats", getChatMessages);
-router.patch("/group/:id/open", openGroup);
-router.patch("/group/:id/close", closeGroup);
+router.patch("/group/:id/availability", changeGroupAvailability);
 
 router.patch("/group/:id/gantt/:ganttId", updateGantt);
 router.delete("/group/:id/gantt/:ganttId", deleteGantt);

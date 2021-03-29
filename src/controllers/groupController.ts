@@ -591,6 +591,7 @@ export const getGroupAndAssignment = async (
       submissionStatus,
       submissionDate,
       assignmentId,
+      isOpen,
     } = groupSnapshot.data()!;
     const assignmentRef = firestore.collection("assignments").doc(assignmentId);
     const assignmentSnapshot = await assignmentRef.get();
@@ -652,39 +653,25 @@ export const getGroupAndAssignment = async (
       assignmentDoc,
       subjectCode,
       subjectTitle,
+      isOpen,
     });
   } catch (error) {
     res.status(400).send(error.message);
   }
 };
 
-export const openGroup = async (
+export const changeGroupAvailability = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const groupId = req.params.id;
+    const isOpen = req.body;
     await firestore.collection("groups").doc(groupId).update({
-      isOpen: true,
+      isOpen,
     });
-    res.status(200).send("Opened");
-  } catch (error) {
-    res.status(400).send(error.message);
-  }
-};
-
-export const closeGroup = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const groupId = req.params.id;
-    await firestore.collection("groups").doc(groupId).update({
-      isOpen: false,
-    });
-    res.status(200).send("Group closed");
+    res.status(200).send("Group set");
   } catch (error) {
     res.status(400).send(error.message);
   }
