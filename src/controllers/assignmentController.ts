@@ -519,7 +519,7 @@ export const supplyAssignmentData = async (
     const { maxStudent, subjectCode, assignNo } = assignmentSnapshot.data()!;
     const subjectRef = firestore.collection("subjects").doc(subjectCode);
     const subjectSnapshot = await subjectRef.get();
-    const { studentsCount, subjectTitle } = subjectSnapshot.data()!;
+    const { studentsCount, name } = subjectSnapshot.data()!;
 
     const dataset1 = await (async (maxStudent: number) => {
       let queries = [];
@@ -552,16 +552,14 @@ export const supplyAssignmentData = async (
       ];
     })();
 
-    res
-      .status(200)
-      .send({
-        dataset1,
-        studentsCount,
-        dataset2,
-        subjectCode,
-        subjectTitle,
-        assignNo,
-      });
+    res.status(200).send({
+      dataset1,
+      studentsCount,
+      dataset2,
+      subjectCode,
+      subjectTitle: name,
+      assignNo,
+    });
   } catch (error) {
     res.status(400).send(error.message);
   }
