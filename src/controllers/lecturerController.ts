@@ -65,7 +65,7 @@ export const getSubjects = async (
 /**
  *  Query lecturer's assignments by their coursesCode.
  *
- *  @param {Array<string>} req.body.subjectsCode
+ *  @param {Array<string>} req.body.subjectsId
  */
 export const getAssignments = async (
   req: Request,
@@ -73,17 +73,18 @@ export const getAssignments = async (
   next: NextFunction
 ) => {
   try {
-    const { subjectsCode } = req.body;
+    const { subjectsId } = req.body;
+    console.log(subjectsId);
     const assignmentsQuery = firestore
       .collection("assignments")
-      .where("subjectCode", "in", subjectsCode);
+      .where("subjectCode", "in", subjectsId);
     const querySnapshot = await assignmentsQuery.get();
-    const assignmentsId: [][] = [];
+    const _assignmentsId: string[] = [];
     querySnapshot.forEach((doc) => {
-      const { _assignmentsId } = doc.data()!;
-      assignmentsId.push(_assignmentsId);
+      _assignmentsId.push(doc.id);
     });
-    res.status(200).send(assignmentsId.flat());
+    console.log(_assignmentsId);
+    res.status(200).send({ assignmentsId: _assignmentsId });
   } catch (error) {
     res.status(400).send(error.message);
   }
