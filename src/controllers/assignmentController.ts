@@ -502,6 +502,8 @@ export const downloadAssignmentQuestion = async (
  *    dataset1: Array,    // Group member distribution
  *    dataset2: Array,    // Assignment submission rate
  *    studentsCount: number // total number of students enrolled in course
+ *    subjectCode: string,
+ *    subjectTitle: string,
  *  }
  */
 export const supplyAssignmentData = async (
@@ -516,7 +518,7 @@ export const supplyAssignmentData = async (
     const { maxStudent, subjectCode } = assignmentSnapshot.data()!;
     const subjectRef = firestore.collection("subjects").doc(subjectCode);
     const subjectSnapshot = await subjectRef.get();
-    const { studentsCount } = subjectSnapshot.data()!;
+    const { studentsCount, subjectTitle } = subjectSnapshot.data()!;
 
     const dataset1 = await (async (maxStudent: number) => {
       let queries = [];
@@ -549,7 +551,9 @@ export const supplyAssignmentData = async (
       ];
     })();
 
-    res.status(200).send({ dataset1, studentsCount, dataset2 });
+    res
+      .status(200)
+      .send({ dataset1, studentsCount, dataset2, subjectCode, subjectTitle });
   } catch (error) {
     res.status(400).send(error.message);
   }
