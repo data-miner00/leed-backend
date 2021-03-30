@@ -137,13 +137,16 @@ export const getSomeDetails = async (
     const subjectsRef = firestore
       .collection("subjects")
       .where(FieldPath.documentId(), "in", subjectsId);
-    const groupsRef = firestore
-      .collection("groups")
-      .where(FieldPath.documentId(), "in", groupsId);
 
+    let groupsSnapshot;
+    if (groupsId.length > 0) {
+      const groupsRef = firestore
+        .collection("groups")
+        .where(FieldPath.documentId(), "in", groupsId);
+
+      groupsSnapshot = await groupsRef.get();
+    }
     const subjectsSnapshot = await subjectsRef.get();
-    const groupsSnapshot = await groupsRef.get();
-
     type Subject = {
       id: string;
       studentsCount: number;
@@ -189,16 +192,18 @@ export const getSomeDetails = async (
       .where(FieldPath.documentId(), "in", assignmentsId);
     const assignmentsSnapshot = await assignmentsRef.get();
 
-    groupsSnapshot.forEach((doc) => {
-      const { assignmentId, isOpen, leaderId, membersId } = doc.data();
-      groups.push({
-        id: doc.id,
-        assignmentId,
-        isOpen,
-        leaderId,
-        membersId,
+    if (groupsSnapshot) {
+      groupsSnapshot.forEach((doc) => {
+        const { assignmentId, isOpen, leaderId, membersId } = doc.data();
+        groups.push({
+          id: doc.id,
+          assignmentId,
+          isOpen,
+          leaderId,
+          membersId,
+        });
       });
-    });
+    }
 
     assignmentsSnapshot.forEach((doc) => {
       const { subjectCode, assignNo, language, filename } = doc.data();
@@ -227,6 +232,7 @@ export const getSomeDetails = async (
     console.log(assignments);
     res.status(200).send(assignments);
   } catch (error) {
+    console.log(error.message);
     res.status(400).send(error.message);
   }
 };
