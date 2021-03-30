@@ -26,6 +26,7 @@ const firestore = firebase.firestore();
  *    language: string,
  *    maxStudent: number,
  *    subjectCode: string,
+ *    filename: string,
  *    title: string
  *  }
  */
@@ -491,7 +492,17 @@ export const downloadAssignmentQuestion = async (
 };
 
 /**
+ *  Query the group assignment statistics for lecturer analysis page.
  *
+ *  @param {string} req.params.id assignmentsId
+ *
+ *  @returns {Object}
+ *
+ *  {
+ *    dataset1: Array,    // Group member distribution
+ *    dataset2: Array,    // Assignment submission rate
+ *    studentsCount: number // total number of students enrolled in course
+ *  }
  */
 export const supplyAssignmentData = async (
   req: Request,
@@ -521,9 +532,24 @@ export const supplyAssignmentData = async (
       return Promise.all(queries);
     })(maxStudent);
 
-    const dataset2 = 1;
+    const dataset2 = await (async () => {
+      const groupsQuery = firestore
+        .collection("groups")
+        .where("assignmentId", "==", assignmentId);
+      const querySnapshot = await groupsQuery.get();
+      const totalGroupsCount: number = querySnapshot.size;
+      let submitted: number = 0;
+      querySnapshot.forEach((doc) => {
+        const { submissionStatus } = doc.data()!;
+        if (submissionStatus) submitted++;
+      });
+      return [
+        { name: "Submitted", value: submitted },
+        { name: "Not submitted", value: totalGroupsCount - submitted },
+      ];
+    })();
 
-    res.status(200).send({ dataset1, studentsCount });
+    res.status(200).send({ dataset1, studentsCount, dataset2 });
   } catch (error) {
     res.status(400).send(error.message);
   }
