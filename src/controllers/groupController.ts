@@ -569,7 +569,7 @@ export const matchmake = async (
         .collection("notifications")
         .doc()
         .set({
-          type: "userJoin",
+          type: "groupJoin",
           actor: "0xFFFFFF",
           actorName: "System",
           actorAvatarUri:
