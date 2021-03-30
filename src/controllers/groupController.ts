@@ -531,8 +531,8 @@ export const matchmake = async (
     matchmakeQueue.push({ assignmentId, studentId, email });
     const assignmentRef = firestore.collection("assignments").doc(assignmentId);
     const assignmentSnapshot = await assignmentRef.get();
-    const { maxStudent } = assignmentSnapshot.data()!;
-
+    const { maxStudent, subjectCode, assignNo } = assignmentSnapshot.data()!;
+    console.log(matchmakeQueue);
     const sameAssignment = matchmakeQueue.filter(
       (request) => request.assignmentId === assignmentId
     );
@@ -564,6 +564,21 @@ export const matchmake = async (
         membersId: randomized.arr,
         isSubmitted: false,
       });
+
+      await firestore
+        .collection("notifications")
+        .doc()
+        .set({
+          type: "userJoin",
+          actor: "0xFFFFFF",
+          actorName: "System",
+          actorAvatarUri:
+            "https://pbs.twimg.com/profile_images/1300994011251879936/aiDyq1Yz_400x400.jpg",
+          message: `Your matchmaking request for joining group assignment of ${subjectCode} 
+          Assignment ${assignNo} has been successful! Go ahead and find out who is your new friends!`,
+          createdAt: FieldValue.serverTimestamp(),
+          recipients: studentsId,
+        });
 
       const emails = sameAssignment.map((s) => s.email);
       console.log(emails);
