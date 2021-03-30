@@ -61,3 +61,30 @@ export const getSubjects = async (
     res.status(400).send(error.message);
   }
 };
+
+/**
+ *  Query lecturer's assignments by their coursesCode.
+ *
+ *  @param {Array<string>} req.body.subjectsCode
+ */
+export const getAssignments = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { subjectsCode } = req.body;
+    const assignmentsQuery = firestore
+      .collection("assignments")
+      .where("subjectCode", "in", subjectsCode);
+    const querySnapshot = await assignmentsQuery.get();
+    const assignmentsId: [][] = [];
+    querySnapshot.forEach((doc) => {
+      const { _assignmentsId } = doc.data()!;
+      assignmentsId.push(_assignmentsId);
+    });
+    res.status(200).send(assignmentsId.flat());
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
