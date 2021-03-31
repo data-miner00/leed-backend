@@ -675,6 +675,16 @@ export const getGroupAndAssignment = async (
   }
 };
 
+/**
+ *  Change the group isOpen status.
+ *
+ *  @param {string} req.params.id groupId
+ *  @param {{ isOpen: boolean }} req.body.isOpen new isOpen state.
+ *
+ *  @logic
+ *  Perform update on group's availability based on the newest
+ *  isOpen state.
+ */
 export const changeGroupAvailability = async (
   req: Request,
   res: Response,
@@ -692,6 +702,13 @@ export const changeGroupAvailability = async (
   }
 };
 
+/**
+ *  Get the chat messages for the assign group by groupId.
+ *
+ *  @param {string} req.params.id groupId
+ *
+ *  @returns {Array<Object>} Array of wrapped messages.
+ */
 export const getChatMessages = async (
   req: Request,
   res: Response,
