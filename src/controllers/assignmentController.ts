@@ -526,20 +526,24 @@ export const supplyAssignmentData = async (
     const subjectRef = firestore.collection("subjects").doc(subjectCode);
     const subjectSnapshot = await subjectRef.get();
     const { studentsCount, name } = subjectSnapshot.data()!;
-
+    let accuStudent = 0;
     const dataset1 = await (async (maxStudent: number) => {
       let queries = [];
-      for (let i = maxStudent; i > 0; i--) {
+
+      for (let i = maxStudent; i > 1; i--) {
         const groupQuery = firestore
           .collection("groups")
           .where("assignmentId", "==", assignmentId)
           .where("membersCount", "==", i);
         const querySnapshot = await groupQuery.get();
         const size = querySnapshot.size;
+        accuStudent = accuStudent + size * i;
         queries.push({ name: `${i} Member(s)`, value: size });
       }
+
       return Promise.all(queries);
     })(maxStudent);
+    dataset1.push({ name: "Orphan", value: studentsCount - accuStudent });
 
     const dataset2 = await (async () => {
       const groupsQuery = firestore
