@@ -563,6 +563,7 @@ export const matchmake = async (
         leaderId: randomized.removedItem,
         membersId: randomized.arr,
         submissionStatus: false,
+        studentsCount: maxStudent,
       });
 
       await firestore
