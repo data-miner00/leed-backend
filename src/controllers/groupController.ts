@@ -721,7 +721,7 @@ export const getChatMessages = async (
       .collection("groups")
       .doc(groupId)
       .collection("messages")
-      .orderBy("createdAt", "desc")
+      .orderBy("createdAt", "asc")
       .limit(25);
     const messagesSnapshot = await messagesRef.get();
     const messages: Object[] = [];
