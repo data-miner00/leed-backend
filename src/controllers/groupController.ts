@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { generate } from "short-uuid";
 import { bookingAlgorithm, randomPop, timestampToDate } from "../utils";
 import transporter from "../nodemailer";
+import fs from "fs";
 
 const firestore = firebase.firestore();
 
@@ -178,8 +179,13 @@ export const addGantt = async (
  *  @param {string} req.params.id groupId
  *  @param {string} req.params.ganttId ganttId
  *  @param {Object} req.body
+ *
  *  {
- *    *
+ *    activity: string,
+ *    assigneeId: string,
+ *    deadline: string,
+ *    from: number,
+ *    to: number
  *  }
  *
  */
@@ -235,7 +241,25 @@ export const deleteGantt = async (
 };
 
 /**
+ *  Get some details of group members.
  *
+ *  @param {string} req.params.id groupId
+ *
+ *  @logic
+ *
+ *  Get the group info.
+ *
+ *  Check whether the group is only one people (leader).
+ *
+ *  Query all details of the members in the group.
+ *
+ *  @returns {Array<Object>}
+ *  Array
+ *    {
+ *      id: string,
+ *      name: string,
+ *      avatarUri: string
+ *    }
  */
 export const getGroupMembers = async (
   req: Request,
@@ -270,6 +294,22 @@ export const getGroupMembers = async (
   }
 };
 
+/**
+ *  Add a discussion time booking.
+ *
+ *  @param {string} req.params.id groupId
+ *  @param {Object} req.body
+ *
+ *  {
+ *    memberId: string,
+ *    startTime: number,
+ *    endTime: number,
+ *    day: string
+ *  }
+ *
+ *  @logic
+ *
+ */
 export const addBooking = async (
   req: Request,
   res: Response,
@@ -285,7 +325,6 @@ export const addBooking = async (
     const memberBookingRef = groupRef.collection("booking");
     const query = memberBookingRef.where("memberId", "==", memberId);
     const querySnapshot = await query.get();
-    console.log(groupId);
 
     if (querySnapshot.empty) {
       const completeData: any = {
@@ -311,9 +350,7 @@ export const addBooking = async (
       }
       await memberBookingRef.doc().set(completeData);
       notUsedEverytime.push(completeData);
-      // const registeredMembersCount = await memberBookingRef
-      //   .get()
-      //   .then((snap) => snap.size);
+
       const groupSize = groupSnapshot.data()!.membersId.length + 1;
 
       const registeredMembersCount = notUsedEverytime.length;
@@ -345,6 +382,26 @@ export const addBooking = async (
   }
 };
 
+/**
+ *  Retrieves all discussion booking data of a group.
+ *
+ *  @param {string} req.params.id groupId
+ *
+ *  @return {Array<Object>}
+ *  Array
+ *    {
+ *      id: string,
+ *      monday: {},
+ *      tuesday: {},
+ *      wednesday: {},
+ *      thursday: {},
+ *      friday: {},
+ *      saturday: {},
+ *      sunday: {},
+ *      memberId: string,
+ *      updatedAt: Timestamp
+ *    }
+ */
 export const getBookings = async (
   req: Request,
   res: Response,
@@ -489,14 +546,38 @@ export const joinGroup = async (
           });
 
         // Send Emails
-        let mailOptions = {
-          from: "noreply2708@gmail.com",
-          to: "pkay_@live.com",
-          subject: "Testing and Testing",
-          text: "It works",
-        };
+        // Send 'user joined' email to existing members
+        // fs.readFile("../templates/studentJoin.html", "utf8", (err, data) => {
+        //   if (err) return console.error(err);
+        //   affectedEmails.forEach((email) => {
+        //     let mailOptions = {
+        //       from: "noreply2708@gmail.com",
+        //       to: email,
+        //       subject: `New Group Member [${subjectCode}] A${assignNo}`,
+        //       text: "A new friend has joined! Check him/her out now!",
+        //       html: data,
+        //     };
 
-        transporter.sendMail(mailOptions, (err, data) => {});
+        //     transporter.sendMail(mailOptions, (err, data) => {
+        //       if (err) console.error(err);
+        //       console.log(data);
+        //     });
+        //   });
+        // });
+
+        // // Send 'joined successfully' to user that request for join
+        // let mailOptions = {
+        //   from: "noreply2708@gmail.com",
+        //   to: email,
+        //   subject: `Successfully Joined [${subjectCode}] A${assignNo}`,
+        //   text:
+        //     "Congratulations, you have successfully join the abovementioned assignment group!",
+        // };
+
+        // transporter.sendMail(mailOptions, (err, data) => {
+        //   if (err) console.error(err);
+        //   console.log(data);
+        // });
 
         res.status(200).send("ok");
       } else {
@@ -512,6 +593,11 @@ export const joinGroup = async (
   }
 };
 
+/**
+ *  Matchmake students who wish to participate for group assignment.
+ *
+ *  @param {}
+ */
 let matchmakeQueue: {
   assignmentId: string;
   studentId: string;
@@ -591,6 +677,43 @@ export const matchmake = async (
   }
 };
 
+/**
+ *  Serves data for the group and assignment info that used by both
+ *  students and users.
+ *
+ *  @param {string} req.params.id groupId
+ *
+ *  @logic
+ *  Get the group's info.
+ *  Get the assignment's info.
+ *  Get the leader's info.
+ *  Get the member's info. (?)
+ *
+ *
+ *
+ *  @returns {Object}
+ *
+ *  {
+ *    leader: {
+ *      id: string,
+ *      name: string,
+ *      avatarUri: string,
+ *    },
+ *    members: Array<Obejct>,
+ *    filename: string,
+ *    submissionStatus: boolean,
+ *    assignNo: number,
+ *    description: string,
+ *    assignmentId: string,
+ *    dueDate: string,
+ *    language: string,
+ *    maxStudent: number,
+ *    assignmentDoc: string,
+ *    subjectCode: string,
+ *    subjectTitle: string,
+ *    isOpen: boolean,
+ *  }
+ */
 export const getGroupAndAssignment = async (
   req: Request,
   res: Response,
