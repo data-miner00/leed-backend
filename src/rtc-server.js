@@ -54,6 +54,10 @@ io.on("connection", (socket) => {
     const room = users.find((user) => user.id == socket.id).groupId;
     socket.broadcast.to(room).emit("code", code);
   });
+
+  socket.on("save", ({ code, filename }) => {
+    //
+  });
 });
 
 http.listen(5050, () => console.log("Listening on 5050"));
