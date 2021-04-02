@@ -547,37 +547,37 @@ export const joinGroup = async (
 
         // Send Emails
         // Send 'user joined' email to existing members
-        // fs.readFile("../templates/studentJoin.html", "utf8", (err, data) => {
-        //   if (err) return console.error(err);
-        //   affectedEmails.forEach((email) => {
-        //     let mailOptions = {
-        //       from: "noreply2708@gmail.com",
-        //       to: email,
-        //       subject: `New Group Member [${subjectCode}] A${assignNo}`,
-        //       text: "A new friend has joined! Check him/her out now!",
-        //       html: data,
-        //     };
+        fs.readFile("../templates/studentJoin.html", "utf8", (err, data) => {
+          if (err) return console.error(err);
+          affectedEmails.forEach((email) => {
+            let mailOptions = {
+              from: "noreply2708@gmail.com",
+              to: email,
+              subject: `New Group Member [${subjectCode}] A${assignNo}`,
+              text: "A new friend has joined! Check him/her out now!",
+              html: data,
+            };
 
-        //     transporter.sendMail(mailOptions, (err, data) => {
-        //       if (err) console.error(err);
-        //       console.log(data);
-        //     });
-        //   });
-        // });
+            transporter.sendMail(mailOptions, (err, data) => {
+              if (err) console.error(err);
+              console.log(data);
+            });
+          });
+        });
 
-        // // Send 'joined successfully' to user that request for join
-        // let mailOptions = {
-        //   from: "noreply2708@gmail.com",
-        //   to: email,
-        //   subject: `Successfully Joined [${subjectCode}] A${assignNo}`,
-        //   text:
-        //     "Congratulations, you have successfully join the abovementioned assignment group!",
-        // };
+        // Send 'joined successfully' to user that request for join
+        let mailOptions = {
+          from: "noreply2708@gmail.com",
+          to: email,
+          subject: `Successfully Joined [${subjectCode}] A${assignNo}`,
+          text:
+            "Congratulations, you have successfully join the abovementioned assignment group!",
+        };
 
-        // transporter.sendMail(mailOptions, (err, data) => {
-        //   if (err) console.error(err);
-        //   console.log(data);
-        // });
+        transporter.sendMail(mailOptions, (err, data) => {
+          if (err) console.error(err);
+          console.log(data);
+        });
 
         res.status(200).send("ok");
       } else {
