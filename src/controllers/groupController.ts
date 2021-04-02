@@ -36,7 +36,8 @@ export const createGroup = async (
     const {
       assignmentId,
       studentId,
-    }: { assignmentId: string; studentId: string } = req.body;
+      assignNo,
+    }: { assignmentId: string; studentId: string; assignNo: number } = req.body;
     const newGroupId = generate();
 
     // Creating group with info
@@ -47,6 +48,7 @@ export const createGroup = async (
       membersCount: 1,
       membersId: [],
       submissionStatus: false,
+      assignNo,
     });
 
     // Update groupsId reference array of student
