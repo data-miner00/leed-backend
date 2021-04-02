@@ -162,6 +162,7 @@ export const getSomeDetails = async (
       isOpen: boolean;
       leaderId: string;
       membersId: string[];
+      assignNo: number; // Added this redundant property for identification purpose
     };
 
     const subjects: Subject[] = [];
@@ -194,13 +195,20 @@ export const getSomeDetails = async (
 
     if (groupsSnapshot) {
       groupsSnapshot.forEach((doc) => {
-        const { assignmentId, isOpen, leaderId, membersId } = doc.data();
+        const {
+          assignmentId,
+          isOpen,
+          leaderId,
+          membersId,
+          assignNo,
+        } = doc.data();
         groups.push({
           id: doc.id,
           assignmentId,
           isOpen,
           leaderId,
           membersId,
+          assignNo,
         });
       });
     }
@@ -209,10 +217,11 @@ export const getSomeDetails = async (
       const { subjectCode, assignNo, language, filename } = doc.data();
 
       const groupId =
-        groups.find((g) =>
-          subjects
-            .find((s) => s.id == subjectCode)
-            ?.assignmentsId.includes(g.assignmentId)
+        groups.find(
+          (g) =>
+            subjects
+              .find((s) => s.id == subjectCode)
+              ?.assignmentsId.includes(g.assignmentId) && g.assignNo == assignNo
         )?.id || "";
 
       assignments.push({
@@ -224,10 +233,6 @@ export const getSomeDetails = async (
         assignmentId: doc.id,
         filename,
       });
-      if (groupId != "") {
-        const indexInGroups = groups.map((g) => g.id).indexOf(groupId);
-        groups.splice(indexInGroups, 1);
-      }
     });
     console.log(assignments);
     res.status(200).send(assignments);
