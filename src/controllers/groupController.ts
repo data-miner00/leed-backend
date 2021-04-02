@@ -738,7 +738,7 @@ export const getGroupAndAssignment = async (
       .collection("students")
       .doc(leaderId)
       .get();
-    const { id, name, avatarUri } = leaderSnapshot.data()!;
+    const { name, avatarUri } = leaderSnapshot.data()!;
     const members: Object[] = [];
 
     if (membersId && membersId.length > 0) {
@@ -748,9 +748,9 @@ export const getGroupAndAssignment = async (
       const membersSnapshot = await membersRef.get();
 
       membersSnapshot.forEach((doc) => {
-        const { id, name, avatarUri } = doc.data()!;
+        const { name, avatarUri } = doc.data()!;
         members.push({
-          id,
+          id: doc.id,
           name,
           avatarUri,
         });
@@ -776,7 +776,7 @@ export const getGroupAndAssignment = async (
 
     res.status(200).send({
       leader: {
-        id,
+        id: leaderId,
         name,
         avatarUri,
       },
