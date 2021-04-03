@@ -3,7 +3,6 @@ import { Request, Response, NextFunction } from "express";
 import { generate } from "short-uuid";
 import { bookingAlgorithm, randomPop, timestampToDate } from "../utils";
 import transporter from "../nodemailer";
-import fs from "fs";
 
 const firestore = firebase.firestore();
 
@@ -549,23 +548,19 @@ export const joinGroup = async (
 
         // Send Emails
         // Send 'user joined' email to existing members
-        fs.readFile("../templates/studentJoin.html", "utf8", (err, data) => {
-          if (err) return console.error(err);
-          affectedEmails.forEach((email) => {
-            let mailOptions = {
-              from: "noreply2708@gmail.com",
-              to: email,
-              subject: `New Group Member [${subjectCode}] A${assignNo}`,
-              text: "A new friend has joined! Check him/her out now!",
-              html: data,
-            };
+        {
+          let mailOptions = {
+            from: "noreply2708@gmail.com",
+            to: affectedEmails,
+            subject: `New Group Member [${subjectCode}] A${assignNo}`,
+            text: "A new friend has joined! Check him/her out now!",
+          };
 
-            transporter.sendMail(mailOptions, (err, data) => {
-              if (err) console.error(err);
-              console.log(data);
-            });
+          transporter.sendMail(mailOptions, (err, data) => {
+            if (err) console.error(err);
+            console.log(data);
           });
-        });
+        }
 
         // Send 'joined successfully' to user that request for join
         let mailOptions = {
