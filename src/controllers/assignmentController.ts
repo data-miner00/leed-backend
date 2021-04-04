@@ -613,3 +613,56 @@ export const updateAssignment = async (
     res.status(400).send(error.message);
   }
 };
+
+/**
+ *  Get list of groups of the assignment.
+ *
+ *  @param {string} req.params.id
+ */
+export const getAssignmentGroups = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const assignmentId = req.params.id;
+    const groupsQuery = firestore
+      .collection("groups")
+      .where("assignmentId", "==", assignmentId);
+    const querySnapshot = await groupsQuery.get();
+
+    const groups: {
+      id: string;
+      submitted: boolean;
+      membersCount: number;
+      leaderId: string;
+      leaderName: string;
+    }[] = [];
+    const leadersId: string[] = [];
+    querySnapshot.forEach((doc) => {
+      const { submissionStatus, membersCount, leaderId } = doc.data()!;
+      groups.push({
+        id: doc.id,
+        submitted: submissionStatus,
+        membersCount,
+        leaderId,
+        leaderName: "",
+      });
+      leadersId.push(leaderId);
+    });
+
+    const leadersQuery = firestore
+      .collection("students")
+      .where(FieldPath.documentId(), "in", leadersId);
+    const querySnapshot2 = await leadersQuery.get();
+
+    querySnapshot2.forEach((doc) => {
+      const { name } = doc.data()!;
+      groups.find((g) => g.leaderId == doc.id)!.leaderName = name;
+    });
+
+    res.status(200).send(groups);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
