@@ -35,6 +35,12 @@ export const timestampToDate2 = ({
   return date.toISOString().substr(0, 10);
 };
 
+/**
+ *  Get the Month in English based on index given.
+ *
+ *  @param {number} index
+ *  @returns {string}
+ */
 export const getStringMonth = (index: number): string => {
   const months = [
     "January",
@@ -53,10 +59,22 @@ export const getStringMonth = (index: number): string => {
   return months[index];
 };
 
+/**
+ *  Get the AM or PM of a given 24-hour time.
+ *
+ *  @param {number} hours
+ *  @returns {string} "am" | "pm"
+ */
 export const getAMPM = (hours: number) => {
   return hours > 12 ? "pm" : "am";
 };
 
+/**
+ *  Get the time in string based on timesatmp object.
+ *
+ *  @param {Object} Timestamp
+ *  @returns {string}
+ */
 export const timestampGetTime = ({
   seconds,
   nanoseconds,
@@ -71,6 +89,13 @@ export const timestampGetTime = ({
     .padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
 };
 
+/**
+ *  Check if an object is empty.
+ *
+ *  @param {Object} obj
+ *
+ *  @returns {boolean}
+ */
 export const isEmpty = (obj: Object): boolean => {
   return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 };
@@ -80,6 +105,16 @@ export type BookingTime = {
   endTime: number;
 };
 
+/**
+ *  Compute the discussion booking time based on the determined day.
+ *
+ *  @param {Array<BookingTime>} bookings
+ *  @returns
+ *  {
+ *    startTime: number,
+ *    endTime: number
+ *  }
+ */
 export const computeTime = (bookings: Array<BookingTime>) => {
   let startTime = 0;
   let endTime = 24;
@@ -107,6 +142,19 @@ export type Booking = {
   updatedAt: any;
 };
 
+/**
+ *  Compute the most available day of the week and call computeTime
+ *  to get the determined time.
+ *
+ *  @param {Booking[]} bookings
+ *  @returns {Object}
+ *
+ *  {
+ *    startTime: number,
+ *    endTime: number,
+ *    day: string
+ *  }
+ */
 export const bookingAlgorithm = (bookings: Booking[]) => {
   let majority: BookingTime[];
   let day: string = "";
@@ -222,11 +270,30 @@ export const bookingAlgorithm = (bookings: Booking[]) => {
   return { ...computeTime(majority), day };
 };
 
+/**
+ *  Python random.choice function duplicate.
+ *  Randomly selects one item from the provided array and returns.
+ *
+ *  @param {Array<>} arr
+ *  @returns Items in array
+ */
 export const randomChoice = (arr: Array<any>) => {
   const size = arr.length;
   return arr[Math.floor(Math.random() * size)];
 };
 
+/**
+ *  Randomly selects an item in an array.
+ *
+ *  @param {Array<any>} arr
+ *
+ *  @returns {Object}
+ *
+ *  {
+ *    removedItem: any,
+ *    arr: any[]
+ *  }
+ */
 export const randomPop = (arr: Array<any>) => {
   const size: number = arr.length;
   const removedItem: any = arr.splice(Math.floor(Math.random() * size), 1)[0];
