@@ -3,6 +3,21 @@ import { Request, Response, NextFunction } from "express";
 
 const firestore = firebase.firestore();
 
+/**
+ *  Get subject info by subject code.
+ *
+ *  @param {string} req.params.code subjectCode
+ *
+ *  @returns {Object}
+ *
+ *  {
+ *    assignmentsId: string[],
+ *    description: string,
+ *    lecturerId: string,
+ *    name: string,
+ *    studentsCount: number
+ *  }
+ */
 export const getSubject = async (
   req: Request,
   res: Response,
@@ -24,10 +39,21 @@ export const getSubject = async (
 };
 
 /**
- *  Get a list of subjects.
+ *  Get a list of subjects and additional information for the courses page
+ *  in front-end.
  *
  *  @param {Array<string>} req.body (array of subjectCodes)
  *
+ *  @returns {Array<Object>}
+ *  Array
+ *    {
+ *      assignmentsId: string[],
+ *      description: string,
+ *      lecturerId: string,
+ *      name: string,
+ *      studentsCount: number,
+ *      lecturerName: string     // ** Additional info
+ *    }
  */
 export const getSubjects = async (
   req: Request,
