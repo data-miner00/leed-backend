@@ -4,6 +4,23 @@ import { timestampToDate, timestampGetTime } from "../utils";
 
 const firestore = firebase.firestore();
 
+/**
+ *  Get a list of notifications with 25 items max of a user.
+ *
+ *  @param {string} req.params.userId
+ *
+ *  @returns {Array<Object>}
+ *  Array
+ *    {
+ *      actor: string,
+ *      actorName: string,
+ *      actorAvatarUri: string,
+ *      message: string,
+ *      type: string,
+ *      createdDate: string,
+ *      createdTime: string
+ *    }
+ */
 export const getNotifications = async (
   req: Request,
   res: Response,
@@ -39,7 +56,6 @@ export const getNotifications = async (
       });
     });
 
-    console.log(notifications);
     res.status(200).send(notifications);
   } catch (error) {
     res.status(400).send(error.message);
