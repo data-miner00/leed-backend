@@ -133,7 +133,12 @@ export const getSomeDetails = async (
   next: NextFunction
 ) => {
   try {
-    const { subjectsId, groupsId } = req.body;
+    const { studentId } = req.body;
+
+    const studentRef = firestore.collection("students").doc(studentId);
+    const studentSnapshot = await studentRef.get();
+    const { subjectsId, groupsId } = studentSnapshot.data()!;
+
     const subjectsRef = firestore
       .collection("subjects")
       .where(FieldPath.documentId(), "in", subjectsId);
