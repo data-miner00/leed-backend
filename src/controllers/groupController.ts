@@ -648,6 +648,7 @@ export const matchmake = async (
         membersId: randomized.arr,
         submissionStatus: false,
         studentsCount: maxStudent,
+        assignNo,
       });
 
       await firestore
@@ -757,10 +758,10 @@ export const getGroupAndAssignment = async (
       description,
       dueDate,
       maxStudent,
-      assignmentDoc,
       subjectCode,
       language,
     } = assignmentSnapshot.data()!;
+    const assignmentDoc = assignmentSnapshot.data()!.filename;
 
     const subjectTitle: string = await (async (subjectCode: string) => {
       const subjectSnapshot = await firestore
