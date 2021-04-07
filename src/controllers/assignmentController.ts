@@ -270,6 +270,10 @@ export const assignmentSubmit = async (
     const assignmentSnapshot = await assignmentRef.get();
     const { membersId, leaderId } = groupSnapshot.data()!;
     const { assignNo, subjectCode } = assignmentSnapshot.data()!;
+    const subjectRef = firestore.collection("subjects").doc(subjectCode);
+    const subjectSnapshot = await subjectRef.get();
+    const { lecturerId } = subjectSnapshot.data()!;
+
     const date = new Date();
     // Query basic info of leader
     const leaderSnapshot = await firestore
@@ -293,7 +297,7 @@ export const assignmentSubmit = async (
         )} ${date.getDate()}, ${date.getHours()}
       ${getAMPM(date.getHours())}.`,
         type: "assignmentSubmit",
-        recipients: membersId,
+        recipients: [...membersId, lecturerId],
       });
 
     // Update assignment status
