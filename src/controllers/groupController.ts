@@ -616,6 +616,7 @@ export const matchmake = async (
     const assignmentSnapshot = await assignmentRef.get();
     const { maxStudent, subjectCode, assignNo } = assignmentSnapshot.data()!;
     console.log(matchmakeQueue);
+    res.status(200).send("Placed into queue.");
     const sameAssignment = matchmakeQueue.filter(
       (request) => request.assignmentId === assignmentId
     );
@@ -637,7 +638,7 @@ export const matchmake = async (
       });
 
       // Randomly select leader
-      const randomized = randomPop(studentsId);
+      const randomized = randomPop([...studentsId]);
 
       // Create new group
       await firestore.collection("groups").doc(newGroupId).set({
@@ -667,8 +668,6 @@ export const matchmake = async (
       const emails = sameAssignment.map((s) => s.email);
       console.log(emails);
     }
-
-    res.status(200).send("Placed into queue.");
   } catch (error) {
     res.status(400).send(error.message);
   }
