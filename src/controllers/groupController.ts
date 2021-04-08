@@ -58,7 +58,8 @@ export const createGroup = async (
         groupsId: FieldValue.arrayUnion(newGroupId),
       });
 
-    res.status(200).send("Group created");
+    // Send the newgroupID to front end to update the UI
+    res.status(200).send(newGroupId);
   } catch (error) {
     res.status(400).send(error.message);
   }
