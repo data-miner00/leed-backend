@@ -27,7 +27,8 @@ const firestore = firebase.firestore();
  *    maxStudent: number,
  *    subjectCode: string,
  *    filename: string,
- *    title: string
+ *    title: string,
+ *    subjectTitle: string
  *  }
  */
 export const getAssignment = async (
@@ -43,6 +44,14 @@ export const getAssignment = async (
       const data = assignmentData.data();
       const { dueDate } = assignmentData.data()!;
       data!.dueDate = timestampToDate2(dueDate);
+
+      const subjectRef = firestore
+        .collection("subjects")
+        .doc(data!.subjectCode);
+      const subjectSnapshot = await subjectRef.get();
+
+      // Adding subject title attribute to the assignment object
+      data!.subjectTitle = subjectSnapshot.data()!.name;
       res.status(200).send(data);
     } else {
       res.status(404).send("Assignment with the given ID not found");
@@ -102,17 +111,17 @@ export const setAssignment = async (
 
 /**
  *  Get some details to show at the 'assignments' screen in front-end for
- *  student. BUGGED
+ *  student. VERIFIED
  *
  *  @param {string} req.body
  *
  *  {
- *    subjectsId: string[],  // student's joined subject
- *    groupsId: string[]     // student's already formed assignment group
+ *    studentId: string
  *  }
  *
  *  @logic
- *  Perform a lot of complex computations just to get
+ *  Perform a lot of complex computations just to get data
+ *  necessary for the assignment list page for students.
  *
  *  @returns {Array<Object>}
  *
