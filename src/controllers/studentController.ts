@@ -118,3 +118,20 @@ export const getStudentsAvatar = async (
     res.status(400).send(error.message);
   }
 };
+
+export const getStudentGroups = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const studentId = req.params.id;
+    const studentRef = firestore.collection("students").doc(studentId);
+    const studentSnapshot = await studentRef.get();
+    const { groupsId } = studentSnapshot.data()!;
+
+    res.status(200).send(groupsId);
+  } catch (error) {
+    res.status(404).send(error.message);
+  }
+};
