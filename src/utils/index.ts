@@ -1,5 +1,15 @@
 import { Timestamp } from "../database";
 
+/**
+ *  Convert from string date into firebase Timestamp object.
+ *
+ *  @param {string} date (e.g. 2012-01-31)
+ *  @returns {Timestamp}
+ *  {
+ *    seconds: number,
+ *    nanoseconds: number,
+ *  }
+ */
 export const dateToTimestamp = (date: string) => {
   const compatibleObject = new Date(date + "T00:00:00");
   return Timestamp.fromDate(compatibleObject);
@@ -260,7 +270,6 @@ export const bookingAlgorithm = (bookings: Booking[]) => {
       .filter((day) => !isEmpty(day)) as BookingTime[];
     day = "saturday";
   } else {
-    // Need to fix
     majority = [
       { startTime: 0, endTime: 23 },
       { startTime: 5, endTime: 17 },
