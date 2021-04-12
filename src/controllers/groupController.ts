@@ -161,15 +161,15 @@ export const addGantt = async (
     const groupId = req.body.id;
     const gantt = req.body;
     gantt.createdAt = FieldValue.serverTimestamp();
-
+    const ganttId = generate();
     await firestore
       .collection("groups")
       .doc(groupId)
       .collection("gantts")
-      .doc()
+      .doc(ganttId)
       .set(gantt);
 
-    res.status(200).send("Created");
+    res.status(200).send(ganttId);
   } catch (error) {
     res.status(400).send(error.message);
   }
