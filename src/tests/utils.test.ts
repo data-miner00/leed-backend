@@ -56,9 +56,11 @@ describe("Testing every functions in utils file", (): void => {
     const index2: number = 3;
     const expected: string = "Febrauary";
     const expected2: string = "April";
+    const invalidIndex: number = 16;
 
     expect(utils.getStringMonth(index)).toMatch(expected);
     expect(utils.getStringMonth(index2)).toMatch(expected2);
+    expect(utils.getStringMonth(invalidIndex)).toBe(undefined);
   });
 
   it("should get AM PM according to hours", (): void => {
