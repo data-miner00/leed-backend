@@ -1,5 +1,7 @@
 const firebase = require("firebase");
 const dotenv = require("dotenv");
+const path = require("path");
+const fs = require("fs");
 dotenv.config();
 
 const db = firebase.initializeApp({
@@ -64,8 +66,16 @@ io.on("connection", (socket) => {
     socket.broadcast.to(room).emit("code", code);
   });
 
-  socket.on("save", ({ code, filename }) => {
-    //
+  socket.on("save", ({ code, groupId }) => {
+    console.log("called");
+    fs.writeFile(
+      path.join("uploads", "code", groupId + ".file"),
+      code,
+      (err, data) => {
+        if (err) console.error(err);
+        else console.log(data);
+      }
+    );
   });
 });
 
