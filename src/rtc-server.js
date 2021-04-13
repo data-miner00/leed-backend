@@ -1,11 +1,14 @@
 const firebase = require("firebase");
+const dotenv = require("dotenv");
+dotenv.config();
+
 const db = firebase.initializeApp({
-  apiKey: "AIzaSyAylGozCdvYeBdLe12NkooDhW41MqkxorA",
-  authDomain: "leed-caf7c.firebaseapp.com",
-  projectId: "leed-caf7c",
-  storageBucket: "leed-caf7c.appspot.com",
-  messagingSenderId: "33634251985",
-  appId: "1:33634251985:web:f4f082d06b5385cb6881f0",
+  apiKey: process.env.API_KEY,
+  authDomain: process.env.AUTH_DOMAIN,
+  projectId: process.env.PROJECT_ID,
+  storageBucket: process.env.STORAGE_BUCKET,
+  messagingSenderId: process.env.MESSAGING_SENDER_ID,
+  appId: process.env.APP_ID,
 });
 const firestore = db.firestore();
 
@@ -25,14 +28,20 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => console.log("A user disconnected"));
 
   socket.on("join-workspace", ({ groupId, name }) => {
-    console.log("Joined");
+    console.log(`${name} joined ${groupId}`);
     socket.join(groupId);
+
     users.push({ groupId, name, id: socket.id });
+    console.log(users);
   });
 
   socket.on("leave-workspace", ({ groupId, name }) => {
+    console.log(`${name} left ${groupId}`);
     socket.leave(groupId);
-    // users.find(u => )
+
+    const userIndex = users.map((u) => u.name).indexOf(name);
+    users.splice(userIndex, 1);
+    console.log(users);
   });
 
   socket.on("message", (message) => {
@@ -60,4 +69,4 @@ io.on("connection", (socket) => {
   });
 });
 
-http.listen(5050, () => console.log("Listening on 5050"));
+http.listen(process.env.RTC_PORT, () => console.log(`Listening on 5050`));
