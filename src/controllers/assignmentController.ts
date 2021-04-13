@@ -553,7 +553,7 @@ export const supplyAssignmentData = async (
     const dataset1 = await (async (maxStudent: number) => {
       let queries = [];
 
-      for (let i = maxStudent; i > 1; i--) {
+      for (let i = maxStudent; i >= 1; i--) {
         const groupQuery = firestore
           .collection("groups")
           .where("assignmentId", "==", assignmentId)
