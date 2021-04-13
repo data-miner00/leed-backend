@@ -4,6 +4,9 @@ import { generate } from "short-uuid";
 import { bookingAlgorithm, randomPop, timestampToDate } from "../utils";
 import transporter from "../nodemailer";
 
+import path from "path";
+import fs from "fs";
+
 const firestore = firebase.firestore();
 
 /**
@@ -486,7 +489,7 @@ export const joinGroup = async (
       if (assignmentId !== senderAssignmentId) {
         return res.status(400).send("The assignment id does not match");
       }
-
+      console.log(isOpen);
       if (isOpen) {
         const membersAffectedRef = firestore
           .collection("students")
@@ -541,8 +544,8 @@ export const joinGroup = async (
             actor: studentId,
             actorName: name,
             actorAvatarUri: avatarUri,
-            message: `A friend had joined your assignment group for ${subjectCode} 
-          Assignment ${assignNo}. Welcome him/her!`,
+            message: `A friend had joined your assignment group for ${subjectCode}
+            Assignment ${assignNo}. Welcome him/her!`,
             createdAt: FieldValue.serverTimestamp(),
             recipients: [...membersId, leaderId],
           });
@@ -856,4 +859,25 @@ export const getChatMessages = async (
   } catch (error) {
     res.status(400).send(error.message);
   }
+};
+
+export const getCode = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const groupId = req.params.id;
+
+  const pathToFile = path.join("uploads", "code", `${groupId}.file`);
+
+  fs.access(pathToFile, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(200).send("// Type away!");
+    }
+    fs.readFile(pathToFile, "utf8", (err, data) => {
+      if (err) return console.error(err);
+      console.log(data);
+      res.status(200).send(data);
+    });
+  });
 };

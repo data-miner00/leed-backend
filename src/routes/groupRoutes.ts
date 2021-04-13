@@ -14,6 +14,7 @@ import {
   updateGantt,
   deleteGantt,
   getChatMessages,
+  getCode,
 } from "../controllers/groupController";
 
 const router: Router = Router();
@@ -33,6 +34,8 @@ router.patch("/group/:id/availability", changeGroupAvailability);
 
 router.patch("/group/:id/gantt/:ganttId", updateGantt);
 router.delete("/group/:id/gantt/:ganttId", deleteGantt);
+
+router.get("/group/:id/code", getCode);
 
 export default {
   routes: router,
